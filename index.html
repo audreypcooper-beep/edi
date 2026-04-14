@@ -2,10 +2,700 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=frontend/index.html">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClearPath EDI Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<p>Redirecting to <a href="frontend/index.html">ClearPath EDI Portal</a>…</p>
+
+<div id="toast-container"></div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-backdrop" id="edi-success-modal">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    </div>
+    <h3>270 Request Submitted</h3>
+    <p>Your eligibility inquiry has been received. A ClearPath team member will process and forward it to the payer within 1 business day.</p>
+    <div class="ref-number" id="edi-ref-id">CPE-20260407-A1B2C3</div>
+    <p style="font-size:12px;color:var(--muted)">Save this reference number for your records.</p>
+    <button class="btn btn-primary btn-full" style="margin-top:18px" onclick="document.getElementById('edi-success-modal').style.display='none'">Done</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     AUTH WRAPPER
+     ============================================================ -->
+<div id="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- LOGIN -->
+    <div class="auth-screen active" id="screen-login">
+      <div class="auth-logo">
+        <div class="shield"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+        <span>ClearPath EDI</span>
+      </div>
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Sign in to your EDI portal account</div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group" id="lg-email-g">
+          <label>Email Address</label>
+          <input type="text" id="lg-email" placeholder="provider@healthsystem.com">
+          <div class="field-error" id="lg-email-err">Please enter a valid email address.</div>
+        </div>
+        <div class="form-group" id="lg-pass-g">
+          <label>Password</label>
+          <input type="password" id="lg-pass" placeholder="••••••••">
+          <div class="field-error" id="lg-pass-err">Password is required.</div>
+        </div>
+        <div style="text-align:right;margin-bottom:16px">
+          <button type="button" class="link-btn" onclick="showAuthScreen('screen-reset')">Forgot password?</button>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="login-btn">Sign In</button>
+      </form>
+      <div class="demo-divider">or</div>
+      <button class="btn btn-demo" onclick="enterDemo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Demo Access — Enter as Demo User
+      </button>
+      <div class="auth-footer">Don't have an account? <button class="link-btn" onclick="showAuthScreen('screen-register')">Create account</button></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="auth-screen" id="screen-register">
+      <div class="auth-logo">
+        <div class="shield"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+        <span>ClearPath EDI</span>
+      </div>
+      <div class="auth-title">Create account</div>
+      <div class="auth-sub">Set up your ClearPath EDI Portal access</div>
+
+      <!-- Step progress -->
+      <div class="progress-steps" id="reg-progress">
+        <div class="progress-step active" id="reg-step-dot-1"><div class="step-num">1</div><div class="step-label">Account</div></div>
+        <div class="progress-step" id="reg-step-dot-2"><div class="step-num">2</div><div class="step-label">Organization</div></div>
+        <div class="progress-step" id="reg-step-dot-3"><div class="step-num">3</div><div class="step-label">Provider Info</div></div>
+        <div class="progress-step" id="reg-step-dot-4"><div class="step-num">4</div><div class="step-label">Confirm</div></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="reg-step active" id="reg-step-1">
+        <div class="form-row">
+          <div class="form-group" id="rg-fname-g"><label>First Name</label><input type="text" id="rg-fname" placeholder="Jane"><div class="field-error">Required.</div></div>
+          <div class="form-group" id="rg-lname-g"><label>Last Name</label><input type="text" id="rg-lname" placeholder="Smith"><div class="field-error">Required.</div></div>
+        </div>
+        <div class="form-group" id="rg-email-g"><label>Email Address</label><input type="email" id="rg-email" placeholder="jane@healthsystem.com"><div class="field-error">Valid email required.</div></div>
+        <div class="form-group" id="rg-pass-g"><label>Password</label><input type="password" id="rg-pass" placeholder="Min 8 chars, 1 uppercase, 1 number"><div class="field-error">Password must be 8+ chars with uppercase and number.</div></div>
+        <div class="form-group" id="rg-conf-g"><label>Confirm Password</label><input type="password" id="rg-conf" placeholder="Re-enter password"><div class="field-error">Passwords do not match.</div></div>
+        <button class="btn btn-primary btn-full" onclick="regNext(1)">Continue &rarr;</button>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="reg-step" id="reg-step-2">
+        <div class="form-group" id="rg-org-g"><label>Organization Name</label><input type="text" id="rg-org" placeholder="Valley Health System"><div class="field-error">Required.</div></div>
+        <div class="form-group">
+          <label>Account Type</label>
+          <select id="rg-acct-type">
+            <option value="PROVIDER">Healthcare Provider</option>
+            <option value="BILLING_COMPANY">Billing Company</option>
+            <option value="CLEARINGHOUSE">Clearinghouse</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" id="rg-phone" placeholder="(555) 555-5555"></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="regBack(2)">&larr; Back</button>
+          <button class="btn btn-primary" style="flex:1" onclick="regNext(2)">Continue &rarr;</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="reg-step" id="reg-step-3">
+        <div class="form-group" id="rg-npi-g"><label>NPI Number (10 digits)</label><input type="text" id="rg-npi" placeholder="1234567890" maxlength="10"><div class="field-error">NPI must be exactly 10 digits.</div></div>
+        <div class="form-group"><label>Tax ID / EIN</label><input type="text" id="rg-taxid" placeholder="12-3456789"></div>
+        <div class="form-group"><label>Primary Address</label><input type="text" id="rg-addr" placeholder="100 Medical Center Drive, Springfield IL 62701"></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="regBack(3)">&larr; Back</button>
+          <button class="btn btn-primary" style="flex:1" onclick="regNext(3)">Continue &rarr;</button>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="reg-step" id="reg-step-4">
+        <div style="background:var(--bg);border-radius:8px;padding:16px;margin-bottom:16px;font-size:13px">
+          <div style="font-weight:600;margin-bottom:8px">Review your information</div>
+          <div id="reg-review"></div>
+        </div>
+        <div class="form-group">
+          <label class="check-item" style="font-size:13px"><input type="checkbox" id="rg-terms"> I agree to the ClearPath EDI Terms of Service and HIPAA Business Associate Agreement</label>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="regBack(4)">&larr; Back</button>
+          <button class="btn btn-green" id="reg-submit-btn" style="flex:1" onclick="handleRegister()">Create Account</button>
+        </div>
+      </div>
+
+      <div class="auth-footer">Already have an account? <button class="link-btn" onclick="showAuthScreen('screen-login')">Sign in</button></div>
+    </div>
+
+    <!-- PASSWORD RESET -->
+    <div class="auth-screen" id="screen-reset">
+      <div class="auth-logo">
+        <div class="shield"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+        <span>ClearPath EDI</span>
+      </div>
+      <div class="auth-title">Reset Password</div>
+      <div class="auth-sub">Enter your email to receive a reset code</div>
+      <div class="reg-step active" id="rst-step-1">
+        <div class="form-group" id="rst-email-g">
+          <label>Email Address</label>
+          <input type="text" id="rst-email" placeholder="provider@healthsystem.com">
+          <div class="field-error">Please enter a valid email address.</div>
+        </div>
+        <button class="btn btn-primary btn-full" id="rst-send-btn" onclick="sendResetCode()">Send Reset Code</button>
+        <div class="success-msg" id="rst-sent-msg" style="margin-top:12px">Reset code sent! Check your email.</div>
+      </div>
+      <div class="reg-step" id="rst-step-2">
+        <div class="form-group" id="rst-code-g">
+          <label>Verification Code</label>
+          <input type="text" id="rst-code" placeholder="6-digit code from email">
+          <div class="field-error">Code is required.</div>
+        </div>
+        <div class="form-group" id="rst-newpw-g">
+          <label>New Password</label>
+          <input type="password" id="rst-newpw" placeholder="Min 8 chars, 1 uppercase, 1 number">
+          <div class="field-error">Password must be 8+ chars.</div>
+        </div>
+        <div class="form-group" id="rst-confpw-g">
+          <label>Confirm New Password</label>
+          <input type="password" id="rst-confpw" placeholder="Re-enter new password">
+          <div class="field-error">Passwords do not match.</div>
+        </div>
+        <button class="btn btn-primary btn-full" id="rst-confirm-btn" onclick="confirmReset()">Reset Password</button>
+      </div>
+      <div class="auth-footer"><button class="link-btn" onclick="showAuthScreen('screen-login')">&larr; Back to Sign In</button></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN APP
+     ============================================================ -->
+<div id="app-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="shield"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+      <span style="font-family:'Google Sans',sans-serif">ClearPath EDI</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showSection('dashboard')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showSection('edi')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        <span>EDI 270 Setup</span>
+      </div>
+      <div class="nav-item" onclick="showSection('payments')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+        <span>Payments</span>
+      </div>
+      <div class="nav-item" onclick="showSection('reports')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item" onclick="showSection('profile')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>Profile</span>
+      </div>
+      <!-- EDI Transaction Platform link -->
+      <div class="nav-item" onclick="openPlatform()" style="border-top:1px solid rgba(255,255,255,.1);margin-top:8px;padding-top:12px">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <span>Transaction Platform</span>
+      </div>
+      <div class="nav-item" onclick="doLogout()" style="margin-top:auto">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        <span>Logout</span>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-name" id="sidebar-user-name">Loading...</div>
+      <div class="user-role" id="sidebar-user-role">Provider</div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <span style="font-family:'Google Sans',sans-serif;font-size:16px;font-weight:500;color:#202124">ClearPath EDI</span>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="section-dashboard">
+      <div class="welcome-banner">
+        <div>
+          <h2>Welcome back, <span id="dash-user-name">...</span>!</h2>
+          <p>Here's an overview of your EDI activity</p>
+        </div>
+        <div class="date-badge" id="dash-date"></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="#2563EB"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
+          <div class="stat-label">Pending 270s</div>
+          <div class="stat-value" id="stat-pending">—</div>
+          <div class="stat-meta" id="stat-pending-meta">Loading...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="#16A34A"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+          <div class="stat-label">Completed This Month</div>
+          <div class="stat-value" id="stat-completed">—</div>
+          <div class="stat-meta">Eligibility responses received</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber"><svg width="22" height="22" viewBox="0 0 24 24" fill="#D97706"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div>
+          <div class="stat-label">Total Submissions</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-meta">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon navy"><svg width="22" height="22" viewBox="0 0 24 24" fill="#1B2E4B"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+          <div class="stat-label">Errors / Rejected</div>
+          <div class="stat-value" id="stat-errors">—</div>
+          <div class="stat-meta">Require attention</div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <button class="btn btn-primary" onclick="showSection('edi')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+          New 270 Request
+        </button>
+        <button class="btn btn-secondary" onclick="showSection('payments')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2z"/></svg>
+          Make Payment
+        </button>
+        <button class="btn btn-secondary" onclick="showSection('reports')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Download Report
+        </button>
+        <button class="btn btn-secondary" onclick="openPlatform()" style="border-color:#2563EB;color:#2563EB">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+          EDI Platform
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Activity</h3>
+          <span style="font-size:12px;color:var(--muted)">Last 30 days</span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Reference ID</th><th>Type</th><th>Payer</th><th>Status</th></tr></thead>
+              <tbody id="activity-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDI 270 SETUP -->
+    <div class="section" id="section-edi">
+      <div class="page-header">
+        <h1>EDI API Setup Enrollment</h1>
+        <p>Enroll a third-party billing company, software vendor, or provider group for EDI API access</p>
+      </div>
+      <div class="edi-stepper">
+        <div class="edi-step active" id="edi-step-1"><div class="step-circle" id="edi-step-1-num">1</div><div class="step-name">Third Party</div></div>
+        <div class="edi-step" id="edi-step-2"><div class="step-circle" id="edi-step-2-num">2</div><div class="step-name">Payers</div></div>
+        <div class="edi-step" id="edi-step-3"><div class="step-circle" id="edi-step-3-num">3</div><div class="step-name">Technical</div></div>
+        <div class="edi-step" id="edi-step-4"><div class="step-circle" id="edi-step-4-num">4</div><div class="step-name">Authorization</div></div>
+        <div class="edi-step" id="edi-step-5"><div class="step-circle" id="edi-step-5-num">5</div><div class="step-name">Review</div></div>
+      </div>
+
+      <!-- Panel 1: Third Party -->
+      <div class="edi-form-step active" id="edi-panel-1">
+        <div class="section-block">
+          <div class="section-block-header">Third Party Information</div>
+          <div class="section-block-body">
+            <div class="form-row">
+              <div class="form-group" id="setup-vendor-name-g"><label>Company / Vendor Name *</label><input type="text" id="setup-vendor-name" placeholder="Acme Billing Solutions"><div class="field-error">Required.</div></div>
+              <div class="form-group">
+                <label>Vendor Type</label>
+                <select id="setup-vendor-type">
+                  <option value="software-vendor">Software Vendor</option>
+                  <option value="billing-company">Billing Company</option>
+                  <option value="provider-group">Provider Group</option>
+                  <option value="clearinghouse">Clearinghouse</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" id="setup-contact-name-g"><label>Primary Contact Name *</label><input type="text" id="setup-contact-name" placeholder="Jane Smith"><div class="field-error">Required.</div></div>
+              <div class="form-group" id="setup-contact-email-g"><label>Contact Email *</label><input type="email" id="setup-contact-email" placeholder="jane.smith@acmebilling.com"><div class="field-error">Required.</div></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Contact Phone</label><input type="tel" id="setup-contact-phone" placeholder="555-555-5555"></div>
+              <div class="form-group"><label>Vendor NPI (if applicable)</label><input type="text" id="setup-vendor-npi" placeholder="1234567890" maxlength="10"></div>
+            </div>
+            <div class="form-group"><label>Tax ID / EIN</label><input type="text" id="setup-vendor-tax-id" placeholder="12-3456789"></div>
+          </div>
+        </div>
+        <div class="form-nav"><div></div><button class="btn btn-primary" onclick="ediNext()">Next &rarr;</button></div>
+      </div>
+
+      <!-- Panel 2: Payers -->
+      <div class="edi-form-step" id="edi-panel-2">
+        <div class="section-block">
+          <div class="section-block-header">Payer &amp; Transaction Selection</div>
+          <div class="section-block-body">
+            <div class="form-row">
+              <div class="form-group" id="setup-payer-name-g"><label>Payer Name *</label><input type="text" id="setup-payer-name" placeholder="Aetna / CVS Health"><div class="field-error">Required.</div></div>
+              <div class="form-group" id="setup-payer-id-g"><label>Payer ID *</label><input type="text" id="setup-payer-id" placeholder="60054"><div class="field-error">Required.</div></div>
+            </div>
+            <div class="form-group">
+              <label>Payer Type</label>
+              <select id="setup-payer-type">
+                <option value="commercial">Commercial</option>
+                <option value="medicare">Medicare</option>
+                <option value="medicaid">Medicaid</option>
+                <option value="tricare">Tricare</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Transaction Types Requested *</label>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+                <label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="setup-tx-270"> 270/271 Eligibility</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="setup-tx-837p"> 837P Professional Claims</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="setup-tx-837i"> 837I Institutional Claims</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="setup-tx-837d"> 837D Dental Claims</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="setup-tx-835"> 835 Remittance</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="setup-tx-277"> 276/277 Claim Status</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:normal"><input type="checkbox" id="setup-tx-275"> 275 Attachments</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Requested Environment</label>
+              <select id="setup-environment">
+                <option value="production">Production</option>
+                <option value="test">Test/Sandbox</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="form-nav"><button class="btn btn-secondary" onclick="ediBack()">&larr; Back</button><button class="btn btn-primary" onclick="ediNext()">Next &rarr;</button></div>
+      </div>
+
+      <!-- Panel 3: Technical -->
+      <div class="edi-form-step" id="edi-panel-3">
+        <div class="section-block">
+          <div class="section-block-header">Technical &amp; Connectivity Details</div>
+          <div class="section-block-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Clearinghouse</label>
+                <select id="setup-clearinghouse">
+                  <option value="availity">Availity</option>
+                  <option value="optum">Optum/Change Healthcare</option>
+                  <option value="waystar">Waystar</option>
+                  <option value="trizetto">Trizetto</option>
+                  <option value="direct">Direct Payer API</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Submitter ID (if known)</label><input type="text" id="setup-submitter-id" placeholder="SUB-123456"></div>
+            </div>
+            <div class="form-group"><label>ISA Sender ID (if known)</label><input type="text" id="setup-isa-sender" placeholder="ZZ123456789"></div>
+            <div class="form-row">
+              <div class="form-group" id="setup-tech-contact-name-g"><label>Technical Contact Name *</label><input type="text" id="setup-tech-contact-name" placeholder="Alex Johnson"><div class="field-error">Required.</div></div>
+              <div class="form-group" id="setup-tech-contact-email-g"><label>Technical Contact Email *</label><input type="email" id="setup-tech-contact-email" placeholder="alex.johnson@acmebilling.com"><div class="field-error">Required.</div></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Technical Contact Phone</label><input type="tel" id="setup-tech-phone" placeholder="555-555-5555"></div>
+              <div class="form-group"><label>Requested Go-Live Date</label><input type="date" id="setup-go-live-date"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-nav"><button class="btn btn-secondary" onclick="ediBack()">&larr; Back</button><button class="btn btn-primary" onclick="ediNext()">Next &rarr;</button></div>
+      </div>
+
+      <!-- Panel 4: Authorization -->
+      <div class="edi-form-step" id="edi-panel-4">
+        <div class="section-block">
+          <div class="section-block-header">Authorization &amp; Signature</div>
+          <div class="section-block-body">
+            <div class="form-row">
+              <div class="form-group" id="setup-auth-name-g"><label>Authorized Signatory Name *</label><input type="text" id="setup-auth-name" placeholder="Mary Williams"><div class="field-error">Required.</div></div>
+              <div class="form-group"><label>Title / Role</label><input type="text" id="setup-auth-title" placeholder="VP of Operations"></div>
+            </div>
+            <div class="form-group"><label>Authorization Date</label><input type="date" id="setup-auth-date"></div>
+            <div class="form-group" id="setup-auth-agree-g">
+              <label style="display:flex;align-items:flex-start;gap:10px;font-weight:normal;cursor:pointer">
+                <input type="checkbox" id="setup-auth-agree" style="margin-top:3px;flex-shrink:0">
+                <span>I certify that the information provided is accurate and I am authorized to request EDI API access on behalf of the listed third party.</span>
+              </label>
+              <div class="field-error">You must agree to continue.</div>
+            </div>
+            <div class="form-group">
+              <label>Additional Notes (optional)</label>
+              <textarea id="setup-notes" placeholder="Any additional context, special requirements, or notes for the EDI enrollment team..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="form-nav"><button class="btn btn-secondary" onclick="ediBack()">&larr; Back</button><button class="btn btn-primary" onclick="ediNext()">Review &rarr;</button></div>
+      </div>
+
+      <!-- Panel 5: Review -->
+      <div class="edi-form-step" id="edi-panel-5">
+        <div class="alert alert-info" style="margin-bottom:16px">After submission, your EDI Administrator will receive an email to review and complete this request before it is sent to the payer's EDI enrollment team.</div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Review EDI Setup Request</h3></div>
+          <div class="card-body">
+            <div id="setup-preview-block"></div>
+          </div>
+        </div>
+        <div class="form-nav">
+          <button class="btn btn-secondary" onclick="ediBack()">&larr; Back</button>
+          <button class="btn btn-green" id="edi-submit-btn" onclick="submitEdiSetup()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            Submit EDI Setup Request
+          </button>
+        </div>
+      </div>
+
+      <!-- EDI Setup Requests table -->
+      <div class="card" style="margin-top:24px">
+        <div class="card-header"><h3>EDI Setup Requests</h3><button class="btn btn-secondary btn-sm" onclick="loadSetupRequests()">Refresh</button></div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Reference ID</th><th>Vendor</th><th>Payer</th><th>Transactions</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+              <tbody id="setup-requests-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="section" id="section-payments">
+      <div class="page-header"><h1>Payments</h1><p>Manage ACH and wire payments</p></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchPayTab('tab-makepay',this)">Make Payment</div>
+        <div class="tab" onclick="switchPayTab('tab-bankaccounts',this)">Bank Accounts</div>
+      </div>
+      <div class="tab-panel active" id="tab-makepay">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="card">
+            <div class="card-header"><h3>New Payment</h3></div>
+            <div class="card-body">
+              <div class="form-group" id="py-amt-g">
+                <label>Amount</label>
+                <input type="text" id="pay-amount" placeholder="$0.00" oninput="formatCurrency(this)">
+                <div class="field-error">Please enter a valid amount.</div>
+              </div>
+              <div class="form-group">
+                <label>Payment Type</label>
+                <select id="pay-type">
+                  <option value="ACH">ACH Transfer</option>
+                  <option value="WIRE">Wire Transfer</option>
+                  <option value="CHECK">Check</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>From Account</label>
+                <select id="pay-account"><option value="">Loading accounts...</option></select>
+              </div>
+              <div class="form-group">
+                <label>Description / Memo</label>
+                <input type="text" id="pay-description" placeholder="EDI services – April 2026">
+              </div>
+              <button class="btn btn-primary btn-full" id="pay-submit-btn" onclick="submitPayment()">Submit Payment</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Recent Payments</h3></div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Reference</th><th>Amount</th><th>Type</th><th>Description</th><th>Status</th><th>Date</th></tr></thead>
+                  <tbody id="payments-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-bankaccounts">
+        <div id="bank-accounts-list" style="margin-bottom:16px"></div>
+        <button class="btn btn-secondary" onclick="document.getElementById('add-account-form').classList.toggle('open')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Add Bank Account
+        </button>
+        <div class="add-account-form" id="add-account-form">
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:14px">Add New Bank Account</h4>
+          <div class="form-group" id="bank-holder-g"><label>Account Holder Name</label><input type="text" id="bank-holder" placeholder="Valley Health System"></div>
+          <div class="form-row">
+            <div class="form-group" id="bank-name-g"><label>Bank Name *</label><input type="text" id="bank-name" placeholder="JPMorgan Chase"><div class="field-error">Required.</div></div>
+            <div class="form-group"><label>Account Type</label><select id="bank-type"><option value="CHECKING">Checking</option><option value="SAVINGS">Savings</option></select></div>
+          </div>
+          <div class="form-group" id="bank-routing-g">
+            <label>Routing Number (9 digits) *</label>
+            <input type="text" id="bank-routing" placeholder="021000021" maxlength="9">
+            <div class="field-error">Routing number must be exactly 9 digits.</div>
+          </div>
+          <div class="form-group" id="bank-account-g">
+            <label>Account Number *</label>
+            <input type="text" id="bank-account" placeholder="Account number">
+            <div class="field-error">Required.</div>
+          </div>
+          <div style="background:var(--blue-light);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--blue);margin-bottom:14px">
+            Micro-deposits will verify your account within 1–2 business days.
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary" id="bank-add-btn" onclick="addBankAccount()">Save Account</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('add-account-form').classList.remove('open')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="section" id="section-reports">
+      <div class="page-header"><h1>Reports</h1><p>Generate and download EDI transaction reports</p></div>
+      <div class="report-filters">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:14px">Report Filters</h3>
+        <div class="filters-row">
+          <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="report-date-from"></div>
+          <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="report-date-to"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <button class="btn btn-primary" id="report-btn-270" onclick="generateReport('270')">↓ EDI 270 Report</button>
+            <button class="btn btn-secondary" id="report-btn-271" onclick="generateReport('271')">↓ EDI 271 Report</button>
+            <button class="btn btn-secondary" id="report-btn-payment-summary" onclick="generateReport('PAYMENT_SUMMARY')">↓ Payments</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Generated Reports</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadReports()">Refresh</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Reference ID</th><th>Type</th><th>Date Range</th><th>Records</th><th>Status</th><th>Download</th></tr></thead>
+              <tbody id="reports-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="section" id="section-profile">
+      <div class="page-header"><h1>Profile &amp; Settings</h1><p>Manage your account information and preferences</p></div>
+      <div class="profile-section">
+        <div class="profile-section-header">Account Information</div>
+        <div class="profile-section-body">
+          <div class="form-row">
+            <div class="form-group"><label>First Name</label><input type="text" id="profile-first" placeholder="Jane"></div>
+            <div class="form-group"><label>Last Name</label><input type="text" id="profile-last" placeholder="Smith"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Email</label><input type="email" id="profile-email" readonly style="background:#f8fafc;cursor:not-allowed"></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="profile-phone" placeholder="(555) 555-5555"></div>
+          </div>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-header">Organization Information</div>
+        <div class="profile-section-body">
+          <div class="form-row">
+            <div class="form-group"><label>Organization Name</label><input type="text" id="profile-org" placeholder="Valley Health System"></div>
+            <div class="form-group"><label>Account Type</label>
+              <select id="profile-type">
+                <option value="PROVIDER">Healthcare Provider</option>
+                <option value="BILLING_COMPANY">Billing Company</option>
+                <option value="CLEARINGHOUSE">Clearinghouse</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>NPI Number</label><input type="text" id="profile-npi" placeholder="1234567890" maxlength="10"></div>
+            <div class="form-group"><label>Tax ID / EIN</label><input type="text" id="profile-tax-id" placeholder="12-3456789"></div>
+          </div>
+          <button class="btn btn-primary" id="profile-save-btn" onclick="saveProfile()">Save Profile</button>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-header">Change Password</div>
+        <div class="profile-section-body">
+          <div class="form-group"><label>Current Password</label><input type="password" id="pwd-current" placeholder="••••••••"></div>
+          <div class="form-row">
+            <div class="form-group"><label>New Password</label><input type="password" id="pwd-new" placeholder="Min 8 chars"></div>
+            <div class="form-group"><label>Confirm New Password</label><input type="password" id="pwd-confirm" placeholder="Re-enter"></div>
+          </div>
+          <button class="btn btn-primary" id="pwd-change-btn" onclick="changePassword()">Update Password</button>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-header">Notifications</div>
+        <div class="profile-section-body">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <label class="check-item"><input type="checkbox" id="notif-email" checked> Email notifications for 270 submissions and responses</label>
+            <label class="check-item"><input type="checkbox" id="notif-sms"> SMS notifications for urgent items</label>
+          </div>
+          <button class="btn btn-secondary" style="margin-top:14px" onclick="saveProfile()">Save Preferences</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ─── Scripts ─────────────────────────────────────────────────────────── -->
+<script src="env.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/edi.js"></script>
+<script src="js/payments.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/profile.js"></script>
+<script>
+// ── App bootstrap ────────────────────────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById('section-' + name);
+  if (sec) sec.classList.add('active');
+  event.currentTarget && event.currentTarget.classList.add('active');
+  // Init section-specific data
+  if (name === 'edi')      { initEdi && initEdi(); }
+  if (name === 'payments') { initPayments && initPayments(); }
+  if (name === 'reports')  { initReports && initReports(); }
+  if (name === 'profile')  { initProfile && initProfile(); }
+}
+function switchPayTab(tabId, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tabId)?.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+function openPlatform() {
+  // Pass auth token so platform can verify session
+  localStorage.setItem('fromPortal', '1');
+  window.location.href = 'platform.html';
+}
+// Set date
+document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+</script>
 </body>
 </html>

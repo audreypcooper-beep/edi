@@ -1,0 +1,2592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearPath EDI — Healthcare Transaction Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f1f3f4;
+  --bg2: #ffffff;
+  --bg3: #f8f9fa;
+  --panel: #ffffff;
+  --border: #dadce0;
+  --border2: #e8eaed;
+  --teal: #1a73e8;
+  --teal2: #1557b0;
+  --blue: #1a73e8;
+  --blue2: #1557b0;
+  --amber: #e37400;
+  --red: #d93025;
+  --green: #188038;
+  --purple: #7b1fa2;
+  --orange: #e65100;
+  --text: #202124;
+  --text2: #3c4043;
+  --text3: #5f6368;
+  --mono: 'Roboto Mono', monospace;
+  --sans: 'Google Sans', 'Roboto', sans-serif;
+  --shadow1: 0 1px 2px rgba(60,64,67,.3),0 1px 3px 1px rgba(60,64,67,.15);
+  --shadow2: 0 1px 2px rgba(60,64,67,.3),0 2px 6px 2px rgba(60,64,67,.15);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+.app { display: flex; height: calc(100vh - 48px); overflow: hidden; }
+.sidebar { width: 268px; min-width: 268px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.content { flex: 1; overflow-y: auto; padding: 28px; }
+
+.logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+.logo-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; font-size: 13px; color: #fff; flex-shrink: 0; }
+.logo-text { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+.logo-sub { font-size: 10px; font-family: var(--mono); color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; }
+
+.nav-section { padding: 12px 12px 4px; }
+.nav-label { font-size: 9px; font-family: var(--mono); color: var(--text3); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 24px; cursor: pointer; transition: background 0.15s; color: var(--text2); font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active { background: #e8f0fe; color: var(--blue); }
+.nav-item .badge { margin-left: auto; background: var(--blue); color: #fff; font-size: 9px; font-family: var(--mono); font-weight: 600; padding: 1px 6px; border-radius: 10px; }
+.nav-item .badge.warn { background: var(--amber); }
+.nav-item .badge.err { background: var(--red); }
+.nav-item .badge.blue { background: var(--blue); }
+.nav-edi { font-size: 9px; font-family: var(--mono); color: var(--text3); margin-left: auto; }
+.nav-item.active .nav-edi { color: var(--blue); opacity: 0.6; }
+.nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+.sidebar-stats { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
+.stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.stat-label { font-size: 10px; font-family: var(--mono); color: var(--text3); }
+.stat-val { font-size: 11px; font-family: var(--mono); font-weight: 600; }
+.stat-val.ok { color: var(--green); }
+.stat-val.warn { color: var(--amber); }
+
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.page-title { font-size: 15px; font-weight: 600; }
+.page-badge { font-size: 10px; font-family: var(--mono); background: var(--panel); border: 1px solid var(--border2); padding: 3px 8px; border-radius: 4px; color: var(--text2); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.topbar-time { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; letter-spacing: 0.2px; }
+.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-primary:hover { background: var(--blue2); border-color: var(--blue2); }
+.btn-secondary { background: #fff; color: var(--text2); border-color: var(--border); }
+.btn-secondary:hover { background: var(--bg3); border-color: #bdc1c6; }
+.btn-ghost { background: transparent; color: var(--text2); border-color: var(--border); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-danger { background: #fce8e6; color: var(--red); border-color: #f5c6c2; }
+.btn-blue { background: #e8f0fe; color: var(--blue); border-color: #c5d8fd; }
+.btn-blue:hover { background: #d2e3fc; }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-xs { padding: 2px 7px; font-size: 10px; border-radius: 4px; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow1); }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.card-edi { font-size: 9px; font-family: var(--mono); color: var(--blue); background: rgba(26,115,232,0.08); border: 1px solid rgba(26,115,232,0.2); padding: 2px 7px; border-radius: 3px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1/-1; }
+label { font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; }
+input, select, textarea { background: #fff; border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--sans); font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(26,115,232,.15); }
+select { appearance: none; cursor: pointer; }
+textarea { resize: vertical; font-family: var(--mono); font-size: 11px; }
+
+.tabs { display: flex; gap: 2px; background: var(--bg3); border-radius: 8px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); flex-wrap: wrap; }
+.tab { flex: 1; padding: 7px 10px; text-align: center; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--text3); transition: all 0.15s; font-family: var(--mono); white-space: nowrap; }
+.tab:hover { color: var(--text2); background: var(--panel); }
+.tab.active { background: var(--blue); color: #fff; box-shadow: var(--shadow1); }
+
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 16px 16px 20px; position: relative; overflow: hidden; box-shadow: var(--shadow1); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; }
+.stat-card.teal::before { background: var(--blue); }
+.stat-card.blue::before { background: var(--blue); }
+.stat-card.amber::before { background: var(--amber); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.purple::before { background: var(--purple); }
+.stat-card.red::before { background: var(--red); }
+.stat-card.orange::before { background: var(--orange); }
+.stat-number { font-size: 28px; font-weight: 700; font-family: var(--mono); margin-bottom: 2px; }
+.stat-number.teal { color: var(--blue); }
+.stat-number.blue { color: var(--blue); }
+.stat-number.amber { color: var(--amber); }
+.stat-number.green { color: var(--green); }
+.stat-number.purple { color: var(--purple); }
+.stat-number.red { color: var(--red); }
+.stat-number.orange { color: var(--orange); }
+.stat-desc { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+.stat-sub { font-size: 10px; font-family: var(--mono); color: var(--text3); }
+.stat-change { font-size: 10px; font-family: var(--mono); }
+.stat-change.up { color: var(--green); }
+.stat-change.down { color: var(--red); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th { background: var(--bg3); padding: 8px 12px; text-align: left; font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:hover { background: var(--bg3); }
+tbody td { padding: 9px 12px; color: var(--text2); vertical-align: middle; }
+tbody td.mono { font-family: var(--mono); font-size: 11px; color: var(--blue); }
+
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+.pill-green { background: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
+.pill-amber { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.pill-red { background: #fce8e6; color: #c5221f; border: 1px solid #f5c6c2; }
+.pill-blue { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d8fb; }
+.pill-teal { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d8fd; }
+.pill-purple { background: #f3e8fd; color: #7b1fa2; border: 1px solid #e1bee7; }
+.pill-orange { background: #fbe9e7; color: #e65100; border: 1px solid #ffccbc; }
+.pill-gray { background: #f1f3f4; color: #5f6368; border: 1px solid #dadce0; }
+
+.edi-block { background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; padding: 14px 16px; font-family: var(--mono); font-size: 10px; line-height: 1.9; color: var(--text2); overflow-x: auto; position: relative; }
+.edi-block .seg { display: block; }
+.edi-block .seg-id { color: var(--blue); font-weight: 600; }
+.edi-block .seg-loop { color: var(--blue); }
+.edi-block .seg-val { color: var(--text); }
+.edi-block .seg-comment { color: var(--text3); }
+
+.steps { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+.step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
+.step:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: 50%; width: 100%; height: 1px; background: var(--border2); }
+.step.done:not(:last-child)::after { background: var(--blue); }
+.step-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border2); background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: var(--mono); color: var(--text3); z-index: 1; margin-bottom: 6px; }
+.step.done .step-dot { border-color: var(--blue); background: var(--blue); color: #fff; }
+.step.active .step-dot { border-color: var(--blue); color: var(--blue); }
+.step-label { font-size: 10px; font-family: var(--mono); color: var(--text3); text-align: center; }
+.step.active .step-label { color: var(--blue); }
+
+.alert { padding: 10px 14px; border-radius: 6px; font-size: 12px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+.alert-info { background: #e8f0fe; border: 1px solid #c5d8fd; color: #1557b0; }
+.alert-success { background: #e6f4ea; border: 1px solid #ceead6; color: #137333; }
+.alert-warn { background: #fef3c7; border: 1px solid #fde68a; color: #b45309; }
+.alert-err { background: #fce8e6; border: 1px solid #f5c6c2; color: #c5221f; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+.rule-list { list-style: none; }
+.rule-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 6px; background: var(--bg3); font-size: 11px; }
+.rule-code { font-family: var(--mono); font-size: 10px; color: var(--amber); width: 70px; flex-shrink: 0; }
+.rule-desc { flex: 1; color: var(--text2); }
+
+.meter { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
+.meter-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+
+.timeline { position: relative; padding-left: 20px; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 1px; background: var(--border2); }
+.tl-item { position: relative; padding-bottom: 16px; }
+.tl-dot { position: absolute; left: -17px; top: 2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border); background: #fff; }
+.tl-dot.ok { border-color: var(--green); background: var(--green); }
+.tl-dot.warn { border-color: var(--amber); background: var(--amber); }
+.tl-dot.active { border-color: var(--blue); background: var(--blue); }
+.tl-time { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-bottom: 2px; }
+.tl-text { font-size: 12px; color: var(--text2); }
+.tl-edi { font-family: var(--mono); font-size: 9px; color: var(--blue); }
+
+.section-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.section-hdr-icon { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.section-hdr-icon.teal { background: #e8f0fe; }
+.section-hdr-icon.blue { background: #e8f0fe; }
+.section-hdr-icon.amber { background: #fef3c7; }
+.section-hdr-icon.green { background: #e6f4ea; }
+.section-hdr-icon.purple { background: #f3e8fd; }
+.section-hdr-icon.orange { background: #fbe9e7; }
+.section-hdr-title { font-size: 17px; font-weight: 700; }
+.section-hdr-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.section-hdr-edi { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-btn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; font-size: 11px; font-family: var(--mono); transition: all 0.15s; }
+.radio-btn:hover { border-color: var(--text3); }
+.radio-btn.active { border-color: var(--blue); background: #e8f0fe; color: var(--blue); font-weight: 500; }
+
+.checkbox-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+.checkbox-row:hover { background: var(--bg3); }
+.checkbox-row input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--blue); cursor: pointer; }
+.checkbox-row span { font-size: 12px; color: var(--text2); }
+
+/* Payer card grid */
+.payer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.payer-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 14px; position: relative; transition: box-shadow 0.15s, border-color 0.15s; cursor: pointer; box-shadow: var(--shadow1); }
+.payer-card:hover { box-shadow: var(--shadow2); border-color: #bdc1c6; }
+.payer-card.connected { border-color: #ceead6; }
+.payer-card.connected::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 8px 8px 0 0; background: var(--green); }
+.payer-card.medicare { border-color: #c5d8fd; }
+.payer-card.medicare::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 8px 8px 0 0; background: var(--blue); }
+.payer-card.medicaid { border-color: #e1b4f5; }
+.payer-card.medicaid::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 8px 8px 0 0; background: var(--purple); }
+.payer-name { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+.payer-id-label { font-size: 9px; font-family: var(--mono); color: var(--text3); }
+.payer-id-val { font-size: 11px; font-family: var(--mono); color: var(--blue); }
+.payer-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.payer-caps { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 6px; }
+.cap-dot { font-size: 9px; font-family: var(--mono); padding: 1px 5px; border-radius: 3px; background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+.cap-dot.on { background: #e8f0fe; color: var(--blue); border-color: #c5d8fd; }
+
+/* Search input */
+.search-bar { position: relative; }
+.search-bar input { padding-left: 32px; width: 100%; }
+.search-bar::before { content: '⌕'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; pointer-events: none; }
+
+/* Connection modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px; padding: 24px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close { background: none; border: none; color: var(--text3); font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 5px; }
+.modal-close:hover { background: var(--panel); color: var(--text); }
+
+/* State Medicaid grid */
+.state-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.state-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 10px; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.state-item:hover { border-color: var(--border2); }
+.state-item.connected { border-color: #ceead6; background: #f6fbf7; }
+.state-name { font-weight: 600; margin-bottom: 2px; }
+.state-id { font-family: var(--mono); font-size: 9px; color: var(--text3); }
+
+/* Payer-specific panel */
+.payer-detail-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.payer-detail-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.payer-logo-placeholder { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 700; font-size: 13px; flex-shrink: 0; }
+
+/* Connection status indicator */
+.conn-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono); }
+.conn-dot { width: 7px; height: 7px; border-radius: 50%; }
+.conn-dot.live { background: var(--green); animation: pulse 2s infinite; }
+.conn-dot.testing { background: var(--amber); }
+.conn-dot.offline { background: var(--text3); }
+.conn-dot.error { background: var(--red); }
+
+/* Environment toggle */
+.env-toggle { display: flex; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.env-btn { padding: 5px 14px; font-size: 11px; font-family: var(--mono); cursor: pointer; color: var(--text3); transition: all 0.15s; }
+.env-btn.active.prod { background: var(--green); color: #fff; }
+.env-btn.active.test { background: var(--amber); color: #fff; }
+</style>
+</head>
+<body>
+<div id="portal-back-bar" style="background:#1a73e8;color:#fff;padding:0 24px;height:48px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:200;box-shadow:0 2px 4px rgba(0,0,0,.2);font-family:'Google Sans','Roboto',sans-serif">
+  <button onclick="window.location.href='index.html'" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 16px;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px">&#8592; Back to ClearPath Portal</button>
+  <span style="font-size:13px;opacity:.85">EDI Transaction Platform</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600">
+    <div id="env-prod" class="env-btn active prod" onclick="setEnv('prod')" style="cursor:pointer;padding:4px 12px;border-radius:4px;background:rgba(255,255,255,.25);color:#fff">PROD</div>
+    <div id="env-test" class="env-btn" onclick="setEnv('test')" style="cursor:pointer;padding:4px 12px;border-radius:4px;color:rgba(255,255,255,.65)">TEST</div>
+  </div>
+</div>
+<div class="app">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">
+      <div class="logo-icon">CP</div>
+      <div>
+        <div class="logo-text">ClearPath EDI</div>
+      </div>
+    </div>
+    <div class="logo-sub">Healthcare Transaction Platform</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="navigate('dashboard',this)">
+      <span class="nav-icon">⬡</span> Dashboard
+      <span class="badge">Live</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Payer Network</div>
+    <div class="nav-item" onclick="navigate('payers',this)">
+      <span class="nav-icon">◉</span> Payer Directory
+      <span class="badge blue">87</span>
+    </div>
+    <div class="nav-item" onclick="navigate('connections',this)">
+      <span class="nav-icon">◎</span> Connections &amp; Routing
+      <span class="badge">12</span>
+    </div>
+    <div class="nav-item" onclick="navigate('medicare',this)">
+      <span class="nav-icon">⬟</span> Medicare Direct
+      <span class="nav-edi">CMS/DDE</span>
+    </div>
+    <div class="nav-item" onclick="navigate('medicaid',this)">
+      <span class="nav-icon">⬟</span> Medicaid Portals
+      <span class="nav-edi">50 States</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Eligibility</div>
+    <div class="nav-item" onclick="navigate('eligibility',this)">
+      <span class="nav-icon">◈</span> Eligibility &amp; Benefits
+      <span class="nav-edi">270/271</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Claims</div>
+    <div class="nav-item" onclick="navigate('claims837p',this)">
+      <span class="nav-icon">◧</span> Professional Claims
+      <span class="nav-edi">837P</span>
+    </div>
+    <div class="nav-item" onclick="navigate('claims837d',this)">
+      <span class="nav-icon">◧</span> Dental Claims
+      <span class="nav-edi">837D</span>
+    </div>
+    <div class="nav-item" onclick="navigate('claims837i',this)">
+      <span class="nav-icon">◧</span> Institutional Claims
+      <span class="nav-edi">837I</span>
+    </div>
+    <div class="nav-item" onclick="navigate('attachments',this)">
+      <span class="nav-icon">◫</span> Claim Attachments
+      <span class="nav-edi">275</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Status &amp; ACK</div>
+    <div class="nav-item" onclick="navigate('ack277ca',this)">
+      <span class="nav-icon">◉</span> Acknowledgements
+      <span class="nav-edi">277CA</span>
+    </div>
+    <div class="nav-item" onclick="navigate('status276',this)">
+      <span class="nav-icon">◎</span> Claim Status
+      <span class="nav-edi">276/277</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Remittance</div>
+    <div class="nav-item" onclick="navigate('remittance835',this)">
+      <span class="nav-icon">◈</span> Remittance Advice
+      <span class="nav-edi">835</span>
+    </div>
+  </div>
+
+  <div class="sidebar-stats">
+    <div class="stat-row">
+      <span class="stat-label">Active Payers</span>
+      <span class="stat-val ok">87 / 87</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Today's Txns</span>
+      <span class="stat-val" style="color:var(--blue)">3,841</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Pending</span>
+      <span class="stat-val warn">38</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Rejection Rate</span>
+      <span class="stat-val ok">2.1%</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="page-badge" id="page-badge">OVERVIEW</div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-dot"></div>
+      <span style="font-size:11px;color:var(--text2)">87 Payers Live</span>
+      <div class="topbar-time" id="clock">--:--:--</div>
+      <button class="btn btn-primary btn-sm" onclick="showNotif()">&#9654; New Transaction</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <div class="view active" id="view-dashboard">
+      <div class="grid-4" style="margin-bottom:16px">
+        <div class="stat-card teal">
+          <div class="stat-number teal">3,841</div>
+          <div class="stat-desc">Total Transactions Today</div>
+          <div class="stat-change up">↑ 18% vs yesterday</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-number green">97.9%</div>
+          <div class="stat-desc">Acceptance Rate</div>
+          <div class="stat-change up">↑ 0.6% this week</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-number amber">38</div>
+          <div class="stat-desc">Pending / Action Required</div>
+          <div class="stat-change down">↓ from 52</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-number blue">$641k</div>
+          <div class="stat-desc">Remittance Today (All Payers)</div>
+          <div class="stat-change up">↑ 11% vs prior day</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Top Payer Performance Today</div>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('payers',null)">View All →</button>
+          </div>
+          <table>
+            <thead><tr><th>Payer</th><th>Payer ID</th><th>Txns</th><th>Accept %</th><th>Avg Turnaround</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:600">UnitedHealthcare</td><td class="mono">87726</td><td>641</td><td style="color:var(--green)">98.4%</td><td class="mono">0.3s</td><td><span class="pill pill-green">● Live</span></td></tr>
+              <tr><td style="font-weight:600">Medicare (CMS)</td><td class="mono">00995</td><td>588</td><td style="color:var(--green)">99.1%</td><td class="mono">1.2s</td><td><span class="pill pill-blue">● DDE</span></td></tr>
+              <tr><td style="font-weight:600">Medicaid (Multi-State)</td><td class="mono">MMIS</td><td>412</td><td style="color:var(--amber)">95.2%</td><td class="mono">2.1s</td><td><span class="pill pill-purple">● MMIS</span></td></tr>
+              <tr><td style="font-weight:600">Blue Cross Blue Shield</td><td class="mono">00001</td><td>398</td><td style="color:var(--green)">97.7%</td><td class="mono">0.4s</td><td><span class="pill pill-green">● Live</span></td></tr>
+              <tr><td style="font-weight:600">Aetna / CVS Health</td><td class="mono">60054</td><td>321</td><td style="color:var(--green)">98.1%</td><td class="mono">0.5s</td><td><span class="pill pill-green">● Live</span></td></tr>
+              <tr><td style="font-weight:600">Cigna / Evernorth</td><td class="mono">62308</td><td>289</td><td style="color:var(--green)">97.9%</td><td class="mono">0.4s</td><td><span class="pill pill-green">● Live</span></td></tr>
+              <tr><td style="font-weight:600">Humana</td><td class="mono">61101</td><td>244</td><td style="color:var(--green)">96.8%</td><td class="mono">0.6s</td><td><span class="pill pill-green">● Live</span></td></tr>
+              <tr><td style="font-weight:600">Centene / WellCare</td><td class="mono">68069</td><td>198</td><td style="color:var(--amber)">94.4%</td><td class="mono">1.8s</td><td><span class="pill pill-green">● Live</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Activity</div></div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot active"></div>
+              <div class="tl-time">14:32:07</div>
+              <div class="tl-text">UnitedHealthcare eligibility verified — WILSON, MARK <span class="tl-edi">271</span></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot ok"></div>
+              <div class="tl-time">14:31:54</div>
+              <div class="tl-text">Medicare DDE claim accepted — $1,240.00 ICN assigned <span class="tl-edi">837P → 277CA</span></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot ok"></div>
+              <div class="tl-time">14:30:12</div>
+              <div class="tl-text">BCBS ERA posted — $88,240.00 across 18 claims <span class="tl-edi">835</span></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot warn"></div>
+              <div class="tl-time">14:28:41</div>
+              <div class="tl-text">Medicaid (CA) — COB sequence error, claim pended <span class="tl-edi">837I</span></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot ok"></div>
+              <div class="tl-time">14:27:09</div>
+              <div class="tl-text">Aetna batch eligibility — 148 members verified <span class="tl-edi">270/271</span></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot ok"></div>
+              <div class="tl-time">14:25:33</div>
+              <div class="tl-text">Medicare MBI lookup — HETS response 1EG4-TE5-MK72 <span class="tl-edi">270 REF*MB</span></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot ok"></div>
+              <div class="tl-time">14:23:11</div>
+              <div class="tl-text">Humana 277CA received — 44 claims acknowledged <span class="tl-edi">277CA</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Payer Connection Health</div>
+          <button class="btn btn-secondary btn-sm" onclick="navigate('connections',null)">Manage Connections →</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+          <div style="background:var(--bg3);border:1px solid rgba(26,115,232,0.2);border-radius:8px;padding:12px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:6px">Availity Clearinghouse</div>
+            <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--green)">LIVE</span><span style="color:var(--text3);margin-left:auto">432 payers</span></div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(26,115,232,0.2);border-radius:8px;padding:12px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:6px">Optum / Change Healthcare</div>
+            <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--green)">LIVE</span><span style="color:var(--text3);margin-left:auto">980 payers</span></div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(26,115,232,0.2);border-radius:8px;padding:12px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:6px">Waystar</div>
+            <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--green)">LIVE</span><span style="color:var(--text3);margin-left:auto">600+ payers</span></div>
+          </div>
+          <div style="background:#e8f0fe;border:1px solid #c5d8fd;border-radius:8px;padding:12px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:6px">Medicare DDE / HETS</div>
+            <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--blue)">DIRECT</span><span style="color:var(--text3);margin-left:auto">CMS only</span></div>
+          </div>
+          <div style="background:#f3e8fd;border:1px solid #e1b4f5;border-radius:8px;padding:12px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:6px">Medicaid MMIS (Multi-State)</div>
+            <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--purple)">LIVE</span><span style="color:var(--text3);margin-left:auto">34 states</span></div>
+          </div>
+          <div style="background:#fbe9e7;border:1px solid #ffccbc;border-radius:8px;padding:12px">
+            <div style="font-size:11px;font-weight:600;margin-bottom:6px">TriZetto / Cognizant</div>
+            <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--orange)">LIVE</span><span style="color:var(--text3);margin-left:auto">350+ payers</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PAYER DIRECTORY ══════════ -->
+    <div class="view" id="view-payers">
+      <div class="section-hdr">
+        <div class="section-hdr-icon teal">◉</div>
+        <div>
+          <div class="section-hdr-title">Payer Directory</div>
+          <div class="section-hdr-sub">87 active payers — commercial, Medicare, Medicaid, managed care, specialty</div>
+        </div>
+        <div class="section-hdr-edi">
+          <span class="card-edi">HIPAA EDI 5010</span>
+          <span class="card-edi">FHIR R4</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+        <div class="search-bar" style="flex:1;min-width:200px">
+          <input type="text" id="payer-search" placeholder="Search payers by name, ID, or state..." oninput="filterPayers()" style="width:100%">
+        </div>
+        <div class="radio-group" id="payer-filter">
+          <div class="radio-btn active" onclick="filterPayerType('all',this)">All (87)</div>
+          <div class="radio-btn" onclick="filterPayerType('commercial',this)">Commercial (48)</div>
+          <div class="radio-btn" onclick="filterPayerType('medicare',this)">Medicare (6)</div>
+          <div class="radio-btn" onclick="filterPayerType('medicaid',this)">Medicaid (21)</div>
+          <div class="radio-btn" onclick="filterPayerType('managed',this)">Managed Care (12)</div>
+        </div>
+      </div>
+
+      <div class="payer-grid" id="payer-grid">
+        <!-- Commercial Payers -->
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('uhc')">
+          <div class="payer-logo-placeholder" style="background:rgba(0,100,210,0.15);color:#0064d2;float:right;font-size:10px">UHC</div>
+          <div class="payer-name">UnitedHealthcare / Optum</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">87726 · UHC0</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">FHIR</div><div class="cap-dot on">Real-Time</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">641 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('bcbs')">
+          <div class="payer-logo-placeholder" style="background:rgba(0,90,195,0.15);color:#005ac3;float:right;font-size:10px">BCBS</div>
+          <div class="payer-name">Blue Cross Blue Shield (National)</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">00001 · BCBS0</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837D</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">Batch</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">398 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('aetna')">
+          <div class="payer-logo-placeholder" style="background:rgba(190,20,30,0.15);color:#be141e;float:right;font-size:10px">AET</div>
+          <div class="payer-name">Aetna / CVS Health</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">60054 · AETNA</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">FHIR</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">321 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('cigna')">
+          <div class="payer-logo-placeholder" style="background:rgba(255,130,0,0.15);color:#f57c00;float:right;font-size:10px">CGN</div>
+          <div class="payer-name">Cigna / Evernorth</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">62308 · CIGNA</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">Real-Time</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">289 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('humana')">
+          <div class="payer-logo-placeholder" style="background:rgba(0,180,100,0.15);color:#00b464;float:right;font-size:10px">HUM</div>
+          <div class="payer-name">Humana</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">61101 · HUMA1</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">MARx</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">244 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('anthem')">
+          <div class="payer-logo-placeholder" style="background:rgba(0,60,160,0.15);color:#003ca0;float:right;font-size:10px">ANT</div>
+          <div class="payer-name">Anthem / Elevance Health</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">00120 · ANTBCB</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837D</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">211 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="managed" onclick="openPayerModal('centene')">
+          <div class="payer-logo-placeholder" style="background:rgba(0,150,150,0.15);color:#009696;float:right;font-size:10px">CEN</div>
+          <div class="payer-name">Centene / WellCare</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">68069 · CTNE0</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot">FHIR</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">198 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="managed" onclick="openPayerModal('molina')">
+          <div class="payer-logo-placeholder" style="background:rgba(180,0,100,0.15);color:#b40064;float:right;font-size:10px">MOL</div>
+          <div class="payer-name">Molina Healthcare</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">MOLINA · State varies</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">Medicaid</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">144 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('kaiser')">
+          <div class="payer-logo-placeholder" style="background:rgba(0,120,80,0.15);color:#007850;float:right;font-size:10px">KP</div>
+          <div class="payer-name">Kaiser Permanente</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">KPSA0 · Regional</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">FHIR</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">129 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('magellan')">
+          <div class="payer-logo-placeholder" style="background:rgba(100,0,150,0.15);color:#640096;float:right;font-size:10px">MAG</div>
+          <div class="payer-name">Magellan Health</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">128SJ · MHPNM</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">835</div><div class="cap-dot on">Behavioral</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">88 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('bcbsma')">
+          <div class="payer-logo-placeholder" style="background:rgba(0,60,180,0.15);color:#003cb4;float:right;font-size:10px">BCMA</div>
+          <div class="payer-name">BCBS Massachusetts</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">00590 · BCBSMA</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837D</div><div class="cap-dot on">835</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">77 txns today</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('oscar')">
+          <div class="payer-logo-placeholder" style="background:rgba(255,50,100,0.15);color:#ff3264;float:right;font-size:10px">OSC</div>
+          <div class="payer-name">Oscar Health</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">OSCAR · 38888</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">835</div><div class="cap-dot on">FHIR API</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">55 txns today</span></div>
+        </div>
+
+        <!-- Medicare -->
+        <div class="payer-card medicare" data-type="medicare" onclick="navigate('medicare',null)">
+          <div class="payer-logo-placeholder" style="background:rgba(59,130,246,0.15);color:var(--blue);float:right;font-size:10px">CMS</div>
+          <div class="payer-name">Medicare — CMS / MAC</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">00995 · MAC-Based</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">HETS 270/271</div><div class="cap-dot on">DDE 837</div><div class="cap-dot on">FISS</div><div class="cap-dot on">MBI</div><div class="cap-dot on">835 ERA</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-blue">● DDE Direct</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">588 txns today</span></div>
+        </div>
+
+        <div class="payer-card medicare" data-type="medicare" onclick="openPayerModal('part_d')">
+          <div class="payer-logo-placeholder" style="background:rgba(59,130,246,0.15);color:var(--blue);float:right;font-size:10px">PDP</div>
+          <div class="payer-name">Medicare Part D — PDP Plans</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">Multiple · Plan-specific</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">MARx</div><div class="cap-dot on">Formulary</div><div class="cap-dot on">NCPDP</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-blue">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">Part D only</span></div>
+        </div>
+
+        <div class="payer-card medicare" data-type="medicare" onclick="openPayerModal('mapd')">
+          <div class="payer-logo-placeholder" style="background:rgba(59,130,246,0.15);color:var(--blue);float:right;font-size:10px">MA</div>
+          <div class="payer-name">Medicare Advantage (MA-PD)</div>
+          <div class="payer-id-label">CONTRACT</div>
+          <div class="payer-id-val">H-contract · Plan varies</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">RA</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-blue">● Connected</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">Via clearinghouse</span></div>
+        </div>
+
+        <!-- Medicaid -->
+        <div class="payer-card medicaid" data-type="medicaid" onclick="navigate('medicaid',null)">
+          <div class="payer-logo-placeholder" style="background:rgba(168,85,247,0.15);color:var(--purple);float:right;font-size:10px">CA</div>
+          <div class="payer-name">Medi-Cal (California)</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">68069 · STCA0</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div><div class="cap-dot on">DHCS Portal</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-purple">● MMIS</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">112 txns today</span></div>
+        </div>
+
+        <div class="payer-card medicaid" data-type="medicaid" onclick="navigate('medicaid',null)">
+          <div class="payer-logo-placeholder" style="background:rgba(168,85,247,0.15);color:var(--purple);float:right;font-size:10px">TX</div>
+          <div class="payer-name">Texas Medicaid (TMHP)</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">TXMDC · TMHP</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-purple">● MMIS</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">88 txns today</span></div>
+        </div>
+
+        <div class="payer-card medicaid" data-type="medicaid" onclick="navigate('medicaid',null)">
+          <div class="payer-logo-placeholder" style="background:rgba(168,85,247,0.15);color:var(--purple);float:right;font-size:10px">NY</div>
+          <div class="payer-name">NY Medicaid (eMedNY)</div>
+          <div class="payer-id-label">PAYER ID</div>
+          <div class="payer-id-val">EMENY · NYSDOH</div>
+          <div class="payer-caps">
+            <div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div>
+          </div>
+          <div class="payer-meta"><span class="pill pill-purple">● MMIS</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">71 txns today</span></div>
+        </div>
+
+        <div class="payer-card" data-type="commercial" onclick="openPayerModal('devoted')">
+          <div class="payer-name">Devoted Health</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">DEVOT</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">FHIR</div></div>
+          <div class="payer-meta"><span class="pill pill-amber">⚙ Setup Req.</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('guardian')">
+          <div class="payer-name">Guardian Life Insurance</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">GUAR0 · 66005</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837D</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('metlife')">
+          <div class="payer-name">MetLife</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">37602 · METLF</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837D</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial" onclick="openPayerModal('delta')">
+          <div class="payer-name">Delta Dental (National)</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">DLTD0 · State varies</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837D</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial">
+          <div class="payer-name">Highmark BCBS</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">00180 · HMKBC</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial">
+          <div class="payer-name">Independence Blue Cross</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">23112 · IBLUE</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="managed">
+          <div class="payer-name">Bright Health</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">BRHLT</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">835</div><div class="cap-dot on">FHIR</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card" data-type="commercial">
+          <div class="payer-name">Wellmark BCBS Iowa/SD</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">00430 · WELMK</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-amber">⚙ Setup Req.</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial">
+          <div class="payer-name">BlueCross BlueShield of TX</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">84980 · BCTX0</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837D</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="managed">
+          <div class="payer-name">Health Net / Centene CA</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">95567 · HNCA0</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card medicaid" data-type="medicaid">
+          <div class="payer-name">Florida Medicaid (AHCA)</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">FLMDC · FMMIS</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-purple">● MMIS</span></div>
+        </div>
+
+        <div class="payer-card medicaid" data-type="medicaid">
+          <div class="payer-name">Illinois Medicaid (HFS)</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">ILMDC · MMIS-IL</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-purple">● MMIS</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial">
+          <div class="payer-name">Cigna Dental</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">CIGDN · 62308D</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837D</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card connected" data-type="commercial">
+          <div class="payer-name">Aetna Dental</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">60054D</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837D</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-green">● Connected</span></div>
+        </div>
+
+        <div class="payer-card" data-type="commercial">
+          <div class="payer-name">Tricare / Military Health</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">TRICR · 74284</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot">835</div></div>
+          <div class="payer-meta"><span class="pill pill-amber">⚙ Setup Req.</span></div>
+        </div>
+
+        <div class="payer-card" data-type="commercial">
+          <div class="payer-name">VA Community Care (CCN)</div>
+          <div class="payer-id-label">PAYER ID</div><div class="payer-id-val">VACCN · Optum-VA</div>
+          <div class="payer-caps"><div class="cap-dot on">270/271</div><div class="cap-dot on">837P</div><div class="cap-dot on">837I</div><div class="cap-dot on">835</div></div>
+          <div class="payer-meta"><span class="pill pill-amber">⚙ Setup Req.</span></div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:20px;color:var(--text3);font-size:11px;font-family:var(--mono)">
+        Showing 28 of 87 payers · <span style="color:var(--blue);cursor:pointer">Load all payers</span>
+      </div>
+    </div>
+
+    <!-- ══════════ CONNECTIONS & ROUTING ══════════ -->
+    <div class="view" id="view-connections">
+      <div class="section-hdr">
+        <div class="section-hdr-icon orange">◎</div>
+        <div>
+          <div class="section-hdr-title">Connections &amp; EDI Routing</div>
+          <div class="section-hdr-sub">Manage clearinghouse credentials, ISA IDs, API keys, and payer-specific routing rules</div>
+        </div>
+      </div>
+
+      <div class="tabs" id="conn-tabs">
+        <div class="tab active" onclick="switchTab('conn','clearinghouses')">Clearinghouses</div>
+        <div class="tab" onclick="switchTab('conn','direct')">Direct Payer APIs</div>
+        <div class="tab" onclick="switchTab('conn','routing')">Routing Rules</div>
+        <div class="tab" onclick="switchTab('conn','creds')">Credentials Vault</div>
+      </div>
+
+      <div id="conn-clearinghouses">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Availity Essentials</div>
+              <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--green)">LIVE — PROD</span></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Sender ISA ID</label><input value="CLEARPATH      " style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>Receiver ISA ID</label><input value="AVLTY          " style="font-family:var(--mono)"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>GS Sender ID</label><input value="CLEARPATHMED" style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>API Client ID</label><input value="avi_clnt_a1b2c3d4" type="password"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>SFTP Host</label><input value="sftp.availity.com" style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>Supported Transactions</label><input value="270/271, 837P/D/I, 835, 277CA, 276/277, 275" readonly style="font-size:10px"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-primary btn-sm">Test Connection</button>
+              <button class="btn btn-ghost btn-sm">View Logs</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Optum / Change Healthcare</div>
+              <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--green)">LIVE — PROD</span></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Sender ISA ID</label><input value="CLEARPATH      " style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>Receiver ISA ID</label><input value="OPTUM          " style="font-family:var(--mono)"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Optum API Key</label><input value="optm_k_x9y8z7..." type="password"></div>
+              <div class="form-group"><label>API Secret</label><input value="●●●●●●●●●●●●" type="password"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>REST Endpoint</label><input value="https://api.changehealthcare.com/medicalnetwork" style="font-size:10px;font-family:var(--mono)"></div>
+              <div class="form-group"><label>Payer Count</label><input value="980+ commercial & government" readonly style="font-size:10px"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-primary btn-sm">Test Connection</button>
+              <button class="btn btn-ghost btn-sm">View Logs</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Waystar</div>
+              <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--green)">LIVE — PROD</span></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Submitter NPI</label><input value="9876543210" style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>Waystar Client ID</label><input value="ws_clnt_99abc" type="password"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>REST API Base URL</label><input value="https://api.waystar.com/v1" style="font-family:var(--mono);font-size:10px"></div>
+              <div class="form-group"><label>Claim Submission Mode</label><select><option>Real-time API</option><option>Batch SFTP</option><option>Both</option></select></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-primary btn-sm">Test Connection</button>
+              <button class="btn btn-ghost btn-sm">View Logs</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">TriZetto / Cognizant</div>
+              <div class="conn-indicator"><div class="conn-dot live"></div><span style="color:var(--orange)">LIVE — PROD</span></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Sender ISA ID</label><input value="CLEARPATH      " style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>Receiver ISA ID</label><input value="TRIZETTO       " style="font-family:var(--mono)"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>QCSI Batch Account</label><input value="TRZ-ACCT-44921" type="password"></div>
+              <div class="form-group"><label>Payer Count</label><input value="350+ payers" readonly style="font-size:10px"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-primary btn-sm">Test Connection</button>
+              <button class="btn btn-ghost btn-sm">View Logs</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="conn-direct" style="display:none">
+        <div class="alert alert-info">ℹ Direct payer API connections bypass clearinghouses for real-time eligibility, prior auth, and FHIR data exchange under CMS Interoperability Rule (21st Century Cures Act).</div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">UnitedHealthcare — Optum API</div><span class="pill pill-green">● Active</span></div>
+            <div class="form-row">
+              <div class="form-group"><label>Client ID</label><input value="uhc_app_client_id" type="password"></div>
+              <div class="form-group"><label>Client Secret</label><input value="●●●●●●●●●●●●" type="password"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Eligibility URL</label><input value="https://api.uhc.com/v1/eligibility" style="font-family:var(--mono);font-size:10px"></div>
+              <div class="form-group"><label>Claims URL</label><input value="https://api.uhc.com/v1/claims" style="font-family:var(--mono);font-size:10px"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:10px"><label>Token Endpoint</label><input value="https://api.uhc.com/oauth2/token" style="font-family:var(--mono);font-size:10px"></div>
+            <div class="alert alert-success" style="margin-bottom:0">✓ OAuth2 token valid · expires in 3,240s</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Aetna — CVS Health API</div><span class="pill pill-green">● Active</span></div>
+            <div class="form-row">
+              <div class="form-group"><label>API Key</label><input value="aetna_api_key_prod" type="password"></div>
+              <div class="form-group"><label>NPI Credential</label><input value="9876543210"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Eligibility Endpoint</label><input value="https://member.aetna.com/appConfig/memberEligibility/api/v1" style="font-family:var(--mono);font-size:9px"></div>
+              <div class="form-group"><label>FHIR Base URL</label><input value="https://api.aetna.com/fhir/r4" style="font-family:var(--mono);font-size:10px"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Cigna — Evernorth API</div><span class="pill pill-green">● Active</span></div>
+            <div class="form-row">
+              <div class="form-group"><label>Client ID</label><input value="cigna_client_8x9y" type="password"></div>
+              <div class="form-group"><label>FHIR Server</label><input value="https://p-hix.cignahealthcare.com" style="font-family:var(--mono);font-size:10px"></div>
+            </div>
+            <div class="alert alert-success" style="margin-bottom:0">✓ CMS Interoperability API enabled · Patient Access + Provider Directory</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Humana — API Gateway</div><span class="pill pill-green">● Active</span></div>
+            <div class="form-row">
+              <div class="form-group"><label>API Key</label><input value="hum_prod_api_key" type="password"></div>
+              <div class="form-group"><label>Real-Time Elig. URL</label><input value="https://api.humana.com/v1/elig" style="font-family:var(--mono);font-size:10px"></div>
+            </div>
+            <div class="alert alert-success" style="margin-bottom:0">✓ Prior Auth API active — X12 278 + FHIR CRD</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Medicare — CMS HETS / DDE</div><span class="pill pill-blue">● Direct</span></div>
+            <div class="form-row">
+              <div class="form-group"><label>Submitter ID (HETS)</label><input value="HETS-SUBID-44921" style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>DDE UserID</label><input value="CP_DDE_USR01" style="font-family:var(--mono)"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>HETS Endpoint (AS2)</label><input value="https://hets.cms.gov" style="font-family:var(--mono);font-size:10px"></div>
+              <div class="form-group"><label>MAC Jurisdiction</label><select><option>JH — Novitas</option><option>JK — WPS</option><option>JL — Palmetto GBA</option><option>JM — Palmetto GBA</option><option>JN — First Coast</option></select></div>
+            </div>
+            <div class="alert alert-success" style="margin-bottom:0">✓ HETS real-time eligibility active · DDE terminal session established</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Oscar Health — FHIR API</div><span class="pill pill-green">● Active</span></div>
+            <div class="form-row">
+              <div class="form-group"><label>Client ID</label><input value="oscar_fhir_app" type="password"></div>
+              <div class="form-group"><label>FHIR R4 Base</label><input value="https://apijava.hioscar.com/r4" style="font-family:var(--mono);font-size:10px"></div>
+            </div>
+            <div class="alert alert-info" style="margin-bottom:0">ℹ Modern FHIR-native payer — SMART on FHIR authorization</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="conn-routing" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Intelligent Transaction Routing Rules</div><button class="btn btn-secondary btn-sm">+ Add Rule</button></div>
+          <div class="alert alert-info">ℹ Rules evaluated top-down. First match wins. Fallback: default clearinghouse (Availity).</div>
+          <table>
+            <thead><tr><th>#</th><th>Condition</th><th>Payer / ID</th><th>Route To</th><th>Mode</th><th>Priority</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">1</td><td>Payer = Medicare (00995)</td><td class="mono">CMS / DDE</td><td>HETS Direct + DDE</td><td><span class="pill pill-blue">Real-Time</span></td><td class="mono">HIGH</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td class="mono">2</td><td>Payer = UHC (87726) + 270/271</td><td class="mono">UnitedHealthcare</td><td>Optum Direct API</td><td><span class="pill pill-teal">Real-Time</span></td><td class="mono">HIGH</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td class="mono">3</td><td>Payer = Aetna (60054) + FHIR</td><td class="mono">Aetna CVS</td><td>Aetna FHIR API</td><td><span class="pill pill-teal">Real-Time</span></td><td class="mono">HIGH</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td class="mono">4</td><td>State Medicaid + 837I</td><td class="mono">State MMIS</td><td>Availity → MMIS</td><td><span class="pill pill-amber">Batch</span></td><td class="mono">MED</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td class="mono">5</td><td>Payer = Cigna (62308)</td><td class="mono">Cigna</td><td>Optum Clearinghouse</td><td><span class="pill pill-teal">Real-Time</span></td><td class="mono">MED</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td class="mono">6</td><td>837D (Dental, any payer)</td><td class="mono">All Dental</td><td>Availity Dental</td><td><span class="pill pill-teal">Real-Time</span></td><td class="mono">MED</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td class="mono">7</td><td>Payer = Humana + Prior Auth</td><td class="mono">Humana</td><td>Humana API + FHIR CRD</td><td><span class="pill pill-teal">Real-Time</span></td><td class="mono">MED</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td class="mono">99</td><td>DEFAULT (any unmatched)</td><td class="mono">—</td><td>Availity Clearinghouse</td><td><span class="pill pill-amber">Batch</span></td><td class="mono">LOW</td><td><span class="pill pill-green">Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="conn-creds" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Credentials Vault</div><button class="btn btn-primary btn-sm">+ Add Credential</button></div>
+          <div class="alert alert-warn">⚠ Credentials stored using AES-256 encryption. Rotate API keys every 90 days per security policy.</div>
+          <table>
+            <thead><tr><th>Credential Name</th><th>Type</th><th>Payer / System</th><th>Created</th><th>Expires</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>uhc-optum-prod-oauth</td><td><span class="pill pill-blue">OAuth2</span></td><td>UnitedHealthcare</td><td>01/01/25</td><td>12/31/25</td><td><span class="pill pill-green">Valid</span></td><td><button class="btn btn-ghost btn-xs">Rotate</button></td></tr>
+              <tr><td>availity-api-key-prod</td><td><span class="pill pill-teal">API Key</span></td><td>Availity</td><td>03/01/25</td><td>03/01/26</td><td><span class="pill pill-green">Valid</span></td><td><button class="btn btn-ghost btn-xs">Rotate</button></td></tr>
+              <tr><td>cms-hets-submitter-cert</td><td><span class="pill pill-purple">X.509 Cert</span></td><td>Medicare HETS</td><td>06/01/24</td><td>06/01/26</td><td><span class="pill pill-green">Valid</span></td><td><button class="btn btn-ghost btn-xs">Renew</button></td></tr>
+              <tr><td>aetna-fhir-client-secret</td><td><span class="pill pill-blue">OAuth2</span></td><td>Aetna</td><td>02/01/25</td><td>02/01/26</td><td><span class="pill pill-green">Valid</span></td><td><button class="btn btn-ghost btn-xs">Rotate</button></td></tr>
+              <tr><td>waystar-sftp-key</td><td><span class="pill pill-amber">SSH Key</span></td><td>Waystar</td><td>09/01/24</td><td>09/01/25</td><td><span class="pill pill-amber">Expiring Soon</span></td><td><button class="btn btn-danger btn-xs">Rotate Now</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ MEDICARE DIRECT ══════════ -->
+    <div class="view" id="view-medicare">
+      <div class="section-hdr">
+        <div class="section-hdr-icon blue">⬟</div>
+        <div>
+          <div class="section-hdr-title">Medicare Direct Access</div>
+          <div class="section-hdr-sub">CMS DDE terminal, HETS eligibility, FISS claims, MBI lookup, MAC jurisdictions</div>
+        </div>
+        <div class="section-hdr-edi">
+          <span class="card-edi">DDE</span><span class="card-edi">HETS</span><span class="card-edi">FISS</span><span class="card-edi">MBI</span>
+        </div>
+      </div>
+
+      <div class="tabs" id="mc-tabs">
+        <div class="tab active" onclick="switchTab('mc','hets')">HETS Eligibility</div>
+        <div class="tab" onclick="switchTab('mc','dde')">DDE Claims</div>
+        <div class="tab" onclick="switchTab('mc','mac')">MAC Jurisdictions</div>
+        <div class="tab" onclick="switchTab('mc','mbi')">MBI Lookup</div>
+        <div class="tab" onclick="switchTab('mc','partd')">Part D / MA Plans</div>
+      </div>
+
+      <div id="mc-hets">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">HETS — Medicare Eligibility Inquiry</div><button class="btn btn-primary btn-sm" onclick="runMedicareElig()">▶ HETS Query</button></div>
+            <div class="alert alert-info">ℹ CMS Healthcare Eligibility Transaction System — real-time Medicare A/B/D coverage via 270 transaction. SLA: &lt;2s.</div>
+            <div class="form-row">
+              <div class="form-group"><label>MBI (11-digit)</label><input id="mc-mbi-in" value="1EG4-TE5-MK72" placeholder="Beneficiary MBI" style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>HICN (legacy, optional)</label><input value="" placeholder="Legacy HICN" style="font-family:var(--mono)"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>First Name</label><input value="DOROTHY"></div>
+              <div class="form-group"><label>Last Name</label><input value="JOHNSON"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Date of Birth</label><input value="19450822" style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>Service Date</label><input value="20250312" style="font-family:var(--mono)"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:10px">
+              <label>Coverage Type Inquiry</label>
+              <div class="radio-group" style="margin-top:5px">
+                <div class="radio-btn active">Part A &amp; B</div>
+                <div class="radio-btn">Part D</div>
+                <div class="radio-btn">MA Plan</div>
+                <div class="radio-btn">MSP / COB</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="mc-hets-result" style="display:none">
+            <div class="card-header"><div class="card-title">HETS 271 Response</div><span class="pill pill-blue">● Medicare Active</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px;grid-column:1/-1">
+                <div style="font-size:9px;font-family:var(--mono);color:var(--text3)">MBI</div>
+                <div style="font-size:18px;font-family:var(--mono);font-weight:700;color:var(--blue);letter-spacing:2px">1EG4-TE5-MK72</div>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px">
+                <div style="font-size:9px;font-family:var(--mono);color:var(--text3)">PART A</div>
+                <div style="font-size:12px;font-weight:600;color:var(--green)">Active</div>
+                <div style="font-size:10px;color:var(--text3)">Eff: 01/01/2010</div>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px">
+                <div style="font-size:9px;font-family:var(--mono);color:var(--text3)">PART B</div>
+                <div style="font-size:12px;font-weight:600;color:var(--green)">Active</div>
+                <div style="font-size:10px;color:var(--text3)">Eff: 01/01/2010</div>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px">
+                <div style="font-size:9px;font-family:var(--mono);color:var(--text3)">MA PLAN</div>
+                <div style="font-size:12px;font-weight:600;color:var(--text3)">None — FFS</div>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px">
+                <div style="font-size:9px;font-family:var(--mono);color:var(--text3)">MSP / COB</div>
+                <div style="font-size:12px;font-weight:600;color:var(--amber)">BCBS Primary</div>
+              </div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px">
+                <div style="font-size:9px;font-family:var(--mono);color:var(--text3)">PART D</div>
+                <div style="font-size:12px;font-weight:600;color:var(--green)">Active — Humana PDP</div>
+              </div>
+            </div>
+            <div class="alert alert-success">✓ HETS response · 1.18s · Trace: 93175-HETS-2025-0091</div>
+          </div>
+          <div id="mc-hets-placeholder" class="card">
+            <div style="text-align:center;padding:30px;color:var(--text3);font-size:12px">Run HETS query to retrieve Medicare coverage details</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mc-dde" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">DDE — Direct Data Entry (Medicare Claims)</div><span class="pill pill-blue">Session Active</span></div>
+          <div class="alert alert-info">ℹ CMS Direct Data Entry allows real-time submission of Part A/B claims to FISS via terminal emulation or AS2. Session secured via CMS-issued certificate.</div>
+          <div class="grid-2">
+            <div>
+              <div class="form-row">
+                <div class="form-group"><label>Medicare Provider Number (PTAN)</label><input value="123456789A" style="font-family:var(--mono)"></div>
+                <div class="form-group"><label>NPI</label><input value="9876543210"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>MAC Jurisdiction</label><select><option>JH — Novitas (PA/NJ/DC/MD/DE)</option><option>JK — WPS (IA/KS/MO/NE)</option><option>JL — Palmetto GBA (NC/SC/VA/WV)</option><option>JM — Palmetto GBA (IN/KY/OH)</option><option>JN — First Coast (FL/PR/VI)</option></select></div>
+                <div class="form-group"><label>Bill Type</label><select><option>71X — Hospital Outpatient</option><option>11X — Hospital Inpatient</option><option>81X — Physician</option><option>34X — Home Health</option></select></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>From Date</label><input value="20250308"></div>
+                <div class="form-group"><label>Thru Date</label><input value="20250312"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>ICN (for adjustments)</label><input placeholder="Leave blank for new claim"></div>
+                <div class="form-group"><label>Frequency Code</label><select><option>1 — Admit thru Discharge</option><option>7 — Replace (Adjustment)</option><option>8 — Void/Cancel</option></select></div>
+              </div>
+              <button class="btn btn-primary" onclick="submitDDE()">▶ Submit to FISS / DDE</button>
+            </div>
+            <div>
+              <div class="edi-block">
+<span class="seg"><span class="seg-comment">  ~ DDE Claim Record — Part A Inpatient</span></span>
+<span class="seg"><span class="seg-id">TYPE:</span> <span class="seg-val">110 IP HOSP</span></span>
+<span class="seg"><span class="seg-id">PTAN:</span> <span class="seg-val">123456789A</span></span>
+<span class="seg"><span class="seg-id">NPI: </span> <span class="seg-val">9876543210</span></span>
+<span class="seg"><span class="seg-id">MBI: </span> <span class="seg-val">1EG4-TE5-MK72</span></span>
+<span class="seg"><span class="seg-id">FROM:</span> <span class="seg-val">20250308</span>  <span class="seg-id">THRU:</span> <span class="seg-val">20250312</span></span>
+<span class="seg"><span class="seg-id">ADMIT DX:</span> <span class="seg-val">N18.4</span></span>
+<span class="seg"><span class="seg-id">PRIN DX: </span> <span class="seg-val">N18.4 POA:Y</span></span>
+<span class="seg"><span class="seg-id">PROC:    </span> <span class="seg-val">0TB54ZX 20250309</span></span>
+<span class="seg"><span class="seg-id">REV 0120:</span> <span class="seg-val">4 DAYS  $4,800.00</span></span>
+<span class="seg"><span class="seg-id">REV 0360:</span> <span class="seg-val">1 UNIT   $5,400.00</span></span>
+<span class="seg"><span class="seg-id">TOTAL:   </span> <span class="seg-val">$14,640.00</span></span>
+<span class="seg"><span class="seg-id">DRG:     </span> <span class="seg-val">682 — Renal Failure w/o CC/MCC</span></span>
+<span class="seg"><span class="seg-comment">  ~ FISS Queue: CLMS &gt; MAP1711</span></span>
+              </div>
+              <div class="alert alert-success" id="dde-ok" style="display:none;margin-top:10px">✓ DDE submission accepted — ICN: 2025071499001 assigned by FISS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mc-mac" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Medicare Administrative Contractors (MACs)</div></div>
+          <table>
+            <thead><tr><th>Jurisdiction</th><th>MAC</th><th>States</th><th>Part A</th><th>Part B</th><th>HHH</th><th>Payer ID</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pill pill-blue">JH</span></td><td>Novitas Solutions</td><td>PA, NJ, DC, MD, DE, CO, NM, TX, OK, AR, LA, MS</td><td class="mono">00380</td><td class="mono">04112</td><td class="mono">00380</td><td class="mono">00380</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td><span class="pill pill-blue">JK</span></td><td>WPS Government Health Administrators</td><td>IA, KS, MO, NE, IL, MN, WI, MI, IN</td><td class="mono">00951</td><td class="mono">00952</td><td class="mono">00951</td><td class="mono">00951</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td><span class="pill pill-blue">JL</span></td><td>Palmetto GBA</td><td>NC, SC, VA, WV</td><td class="mono">11302</td><td class="mono">11302</td><td class="mono">11302</td><td class="mono">11302</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td><span class="pill pill-blue">JM</span></td><td>Palmetto GBA</td><td>IN, KY, OH</td><td class="mono">11304</td><td class="mono">11304</td><td class="mono">11304</td><td class="mono">11304</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td><span class="pill pill-blue">JN</span></td><td>First Coast Service Options</td><td>FL, PR, VI</td><td class="mono">09102</td><td class="mono">09102</td><td class="mono">09102</td><td class="mono">09102</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td><span class="pill pill-blue">JE</span></td><td>CGS Administrators</td><td>OH, KY (Part A), TN</td><td class="mono">18003</td><td class="mono">18003</td><td class="mono">18003</td><td class="mono">18003</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td><span class="pill pill-blue">JF</span></td><td>Noridian Healthcare</td><td>AZ, MT, ND, SD, UT, WY, AK, ID, OR, WA</td><td class="mono">03101</td><td class="mono">03201</td><td class="mono">03101</td><td class="mono">03101</td><td><span class="pill pill-green">Active</span></td></tr>
+              <tr><td><span class="pill pill-blue">JA</span></td><td>Palmetto GBA</td><td>AL, GA, TN</td><td class="mono">10212</td><td class="mono">10212</td><td class="mono">10212</td><td class="mono">10212</td><td><span class="pill pill-green">Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="mc-mbi" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">MBI Lookup — CMS HETS</div><button class="btn btn-primary btn-sm" onclick="runMBI2()">▶ Lookup</button></div>
+            <div class="alert alert-info">ℹ Retrieves the 11-character Medicare Beneficiary Identifier. Replaces legacy HICN. Required on all Medicare claims since Jan 1, 2020.</div>
+            <div class="form-row"><div class="form-group"><label>First Name</label><input value="DOROTHY"></div><div class="form-group"><label>Last Name</label><input value="JOHNSON"></div></div>
+            <div class="form-row"><div class="form-group"><label>Date of Birth</label><input value="19450822"></div><div class="form-group"><label>Gender</label><select><option>Female</option><option>Male</option></select></div></div>
+            <div class="form-row"><div class="form-group"><label>HICN (if known)</label><input value="1AA4TC2GR59" placeholder="Legacy HICN"></div><div class="form-group"><label>SSN Last 4 (optional)</label><input value="7891" placeholder="For verification"></div></div>
+          </div>
+          <div class="card" id="mbi-result2" style="display:none">
+            <div class="card-header"><div class="card-title">MBI Result</div><span class="pill pill-green">● FOUND</span></div>
+            <div style="background:#e8f0fe;border:1px solid #c5d8fd;border-radius:8px;padding:16px;text-align:center;margin-bottom:12px">
+              <div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">MEDICARE BENEFICIARY IDENTIFIER</div>
+              <div style="font-size:24px;font-family:var(--mono);font-weight:700;color:var(--blue);letter-spacing:4px">1EG4-TE5-MK72</div>
+            </div>
+            <div class="alert alert-success">✓ MBI verified via HETS · 270 REF*MB segment auto-generated</div>
+          </div>
+          <div id="mbi-placeholder2" class="card"><div style="text-align:center;padding:30px;color:var(--text3);font-size:12px">Enter patient details and click Lookup</div></div>
+        </div>
+      </div>
+
+      <div id="mc-partd" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Part D Plans &amp; Medicare Advantage</div></div>
+          <table>
+            <thead><tr><th>Plan Name</th><th>Contract ID</th><th>Plan Type</th><th>Payer ID</th><th>RxBIN</th><th>RxPCN</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Humana Gold Plus H0028</td><td class="mono">H0028-004</td><td><span class="pill pill-blue">MA-PD</span></td><td class="mono">61101</td><td class="mono">610591</td><td class="mono">HU01</td><td><span class="pill pill-green">Connected</span></td></tr>
+              <tr><td>UHC AARP MedicareComplete</td><td class="mono">H0609-001</td><td><span class="pill pill-blue">MA-PD</span></td><td class="mono">87726</td><td class="mono">004336</td><td class="mono">ADV</td><td><span class="pill pill-green">Connected</span></td></tr>
+              <tr><td>Aetna Medicare Select Plan</td><td class="mono">H3927-012</td><td><span class="pill pill-blue">MA-PD</span></td><td class="mono">60054</td><td class="mono">010517</td><td class="mono">AETNA</td><td><span class="pill pill-green">Connected</span></td></tr>
+              <tr><td>Cigna-HealthSpring TotalCare</td><td class="mono">H4513-001</td><td><span class="pill pill-blue">MA-PD</span></td><td class="mono">62308</td><td class="mono">009431</td><td class="mono">CIGNA</td><td><span class="pill pill-green">Connected</span></td></tr>
+              <tr><td>WellCare Flex Part D</td><td class="mono">S5601-003</td><td><span class="pill pill-purple">PDP</span></td><td class="mono">WELLC</td><td class="mono">004682</td><td class="mono">WC01</td><td><span class="pill pill-green">Connected</span></td></tr>
+              <tr><td>SilverScript (CVS/Aetna)</td><td class="mono">S5601-003</td><td><span class="pill pill-purple">PDP</span></td><td class="mono">SILSC</td><td class="mono">004682</td><td class="mono">SS01</td><td><span class="pill pill-amber">Setup Req.</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ MEDICAID PORTALS ══════════ -->
+    <div class="view" id="view-medicaid">
+      <div class="section-hdr">
+        <div class="section-hdr-icon purple">⬟</div>
+        <div>
+          <div class="section-hdr-title">State Medicaid Portals</div>
+          <div class="section-hdr-sub">MMIS connectivity for all 50 states + DC — EDI, web portals, FHIR where available</div>
+        </div>
+        <div class="section-hdr-edi">
+          <span class="card-edi" style="background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);color:var(--purple)">MMIS</span>
+          <span class="card-edi">837</span><span class="card-edi">835</span>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:16px">
+        <div class="stat-card purple"><div class="stat-number purple">34</div><div class="stat-desc">States Connected</div><div class="stat-sub">Active MMIS EDI</div></div>
+        <div class="stat-card amber"><div class="stat-number amber">16</div><div class="stat-desc">Portal Only</div><div class="stat-sub">Web submission</div></div>
+        <div class="stat-card teal"><div class="stat-number teal">412</div><div class="stat-desc">Today's Claims</div><div class="stat-sub">Across all states</div></div>
+        <div class="stat-card green"><div class="stat-number green">95.2%</div><div class="stat-desc">Acceptance Rate</div><div class="stat-sub">State Medicaid avg</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">State Medicaid Directory</div>
+          <div style="display:flex;gap:8px">
+            <div class="radio-btn active" onclick="filterMedicaid('all',this)" style="font-size:10px">All States</div>
+            <div class="radio-btn" onclick="filterMedicaid('connected',this)" style="font-size:10px">Connected (34)</div>
+            <div class="radio-btn" onclick="filterMedicaid('portal',this)" style="font-size:10px">Portal Only (16)</div>
+          </div>
+        </div>
+        <div class="state-grid" id="state-grid">
+          <div class="state-item connected" data-status="connected" onclick="openStateModal('CA')">
+            <div class="state-name">California — Medi-Cal</div>
+            <div class="state-id">DHCS · Payer: 68069</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">FHIR</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected" onclick="openStateModal('TX')">
+            <div class="state-name">Texas — TMHP</div>
+            <div class="state-id">HHSC · Payer: TXMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected" onclick="openStateModal('NY')">
+            <div class="state-name">New York — eMedNY</div>
+            <div class="state-id">DOH · Payer: EMENY</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Florida — ACS/Gainwell</div>
+            <div class="state-id">AHCA · Payer: FLMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Illinois — HFS MMIS</div>
+            <div class="state-id">HFS · Payer: ILMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Pennsylvania — PROMISe™</div>
+            <div class="state-id">DHS · Payer: PAMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Ohio — MITS</div>
+            <div class="state-id">ODM · Payer: OHMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Michigan — CHAMPS</div>
+            <div class="state-id">MDHHS · Payer: MIMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">FHIR</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Georgia — GAMMIS</div>
+            <div class="state-id">DCH · Payer: GAMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">North Carolina — NCTracks</div>
+            <div class="state-id">DHHS · Payer: NCMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">New Jersey — NJ FamilyCare</div>
+            <div class="state-id">DHS · Payer: NJMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Virginia — MMIS</div>
+            <div class="state-id">DMAS · Payer: VAMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Washington — ProviderOne</div>
+            <div class="state-id">HCA · Payer: WAMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">FHIR</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Massachusetts — MassHealth</div>
+            <div class="state-id">EOHHS · Payer: MAMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Arizona — AHCCCS</div>
+            <div class="state-id">AHCCCS · Payer: AZMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Colorado — MMIS</div>
+            <div class="state-id">HCPF · Payer: COMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">FHIR</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <!-- Portal Only States -->
+          <div class="state-item" data-status="portal">
+            <div class="state-name">Alaska — AVRS</div>
+            <div class="state-id">DPA · Payer: AKMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot">FHIR</span></div>
+            <div style="margin-top:4px"><span class="pill pill-amber" style="font-size:9px">Portal Only</span></div>
+          </div>
+          <div class="state-item" data-status="portal">
+            <div class="state-name">Hawaii — Med-QUEST</div>
+            <div class="state-id">DHS · Payer: HIMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-amber" style="font-size:9px">Portal Only</span></div>
+          </div>
+          <div class="state-item" data-status="portal">
+            <div class="state-name">Wyoming — WMS</div>
+            <div class="state-id">DHS · Payer: WYMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-amber" style="font-size:9px">Portal Only</span></div>
+          </div>
+          <div class="state-item" data-status="portal">
+            <div class="state-name">Montana — MMIS</div>
+            <div class="state-id">DPHHS · Payer: MTMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-amber" style="font-size:9px">Portal Only</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Minnesota — MN-ITS</div>
+            <div class="state-id">DHS · Payer: MNMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Tennessee — TennCare</div>
+            <div class="state-id">TennCare · Payer: TNMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Indiana — IHCP</div>
+            <div class="state-id">FSSA · Payer: INMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span><span class="cap-dot on">Real-Time</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+          <div class="state-item connected" data-status="connected">
+            <div class="state-name">Missouri — MO HealthNet</div>
+            <div class="state-id">DSS · Payer: MOMDC</div>
+            <div style="margin-top:6px;display:flex;gap:4px"><span class="cap-dot on">EDI</span></div>
+            <div style="margin-top:4px"><span class="pill pill-purple" style="font-size:9px">● MMIS Connected</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ ELIGIBILITY 270/271 ══════════ -->
+    <div class="view" id="view-eligibility">
+      <div class="section-hdr">
+        <div class="section-hdr-icon teal">◈</div>
+        <div>
+          <div class="section-hdr-title">Eligibility &amp; Benefits Verification</div>
+          <div class="section-hdr-sub">Real-time &amp; batch eligibility across 87 payers — auto-routes to HETS, MMIS, or clearinghouse</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">270 — INQUIRY</span>&nbsp;<span class="card-edi">271 — RESPONSE</span></div>
+      </div>
+
+      <div class="tabs" id="elig-tabs">
+        <div class="tab active" onclick="switchTab('elig','realtime')">Real-Time Check</div>
+        <div class="tab" onclick="switchTab('elig','batch')">Batch Processing</div>
+        <div class="tab" onclick="switchTab('elig','discovery')">Insurance Discovery</div>
+        <div class="tab" onclick="switchTab('elig','mbi')">MBI Lookup</div>
+        <div class="tab" onclick="switchTab('elig','cob')">COB Check</div>
+      </div>
+
+      <div id="elig-realtime">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">270 — Eligibility Inquiry</div>
+              <button class="btn btn-primary btn-sm" onclick="submitElig()">▶ Submit</button>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Payer</label>
+                <select id="elig-payer" onchange="updatePayerID()">
+                  <option value="00001">Blue Cross Blue Shield (00001)</option>
+                  <option value="87726">UnitedHealthcare / Optum (87726)</option>
+                  <option value="60054">Aetna / CVS Health (60054)</option>
+                  <option value="62308">Cigna / Evernorth (62308)</option>
+                  <option value="61101">Humana (61101)</option>
+                  <option value="00995">Medicare — CMS (00995)</option>
+                  <option value="MMIS">Medicaid — State (MMIS)</option>
+                  <option value="00120">Anthem / Elevance (00120)</option>
+                  <option value="68069">Centene / WellCare (68069)</option>
+                  <option value="MOLINA">Molina Healthcare (State)</option>
+                  <option value="KPSA0">Kaiser Permanente (KPSA0)</option>
+                  <option value="84980">BCBS Texas (84980)</option>
+                  <option value="00590">BCBS Massachusetts (00590)</option>
+                  <option value="OSCAR">Oscar Health (OSCAR)</option>
+                  <option value="TRICR">Tricare / Military (74284)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Payer ID</label>
+                <input type="text" id="elig-payer-id" value="00001" placeholder="Payer ID" style="font-family:var(--mono)">
+              </div>
+            </div>
+            <div id="elig-route-info" class="alert alert-info" style="padding:7px 12px;font-size:11px">ℹ Route: Availity Clearinghouse → BCBS</div>
+            <div class="form-row">
+              <div class="form-group"><label>Member ID</label><input type="text" value="XYZ123456789" placeholder="Member ID"></div>
+              <div class="form-group"><label>Group Number</label><input type="text" value="GRP00445" placeholder="Group Number"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>First Name</label><input type="text" value="JANE"></div>
+              <div class="form-group"><label>Last Name</label><input type="text" value="DOE"></div>
+            </div>
+            <div class="form-row-3">
+              <div class="form-group"><label>DOB</label><input type="text" value="19850615" style="font-family:var(--mono)"></div>
+              <div class="form-group"><label>Gender</label><select><option>Female</option><option>Male</option></select></div>
+              <div class="form-group"><label>Service Date</label><input type="text" value="20250312" style="font-family:var(--mono)"></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <label style="display:block;margin-bottom:6px">Service Type Codes</label>
+              <div class="radio-group">
+                <div class="radio-btn active">30 — Health Benefit</div>
+                <div class="radio-btn">UC — Urgent Care</div>
+                <div class="radio-btn">50 — Hospital</div>
+                <div class="radio-btn">DEN — Dental</div>
+                <div class="radio-btn">35 — Mental Health</div>
+                <div class="radio-btn">48 — Hospital-Outpatient</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>NPI (Requesting Provider)</label>
+              <input type="text" value="1234567890" placeholder="10-digit NPI">
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="card-header">
+                <div class="card-title">Generated 270 Transaction</div>
+                <button class="btn btn-ghost btn-xs">Copy</button>
+              </div>
+              <div class="edi-block">
+<span class="seg"><span class="seg-id">ISA*</span><span class="seg-val">00*          *00*          *ZZ*SUBMITTERID    *ZZ*PAYERID       *250312*1432*^*00501*000000001*0*T*:</span></span>
+<span class="seg"><span class="seg-id">GS*</span><span class="seg-val">HS*SENDERID*RECEIVERID*20250312*1432*1*X*005010X279A1</span></span>
+<span class="seg"><span class="seg-id">ST*</span><span class="seg-val">270*0001*005010X279A1</span></span>
+<span class="seg"><span class="seg-loop">BHT*</span><span class="seg-val">0022*13*10001234*20250312*1432</span></span>
+<span class="seg"><span class="seg-id">HL*</span><span class="seg-val">1**20*1</span><span class="seg-comment">  ~ Information Source (Payer)</span></span>
+<span class="seg"><span class="seg-id">NM1*</span><span class="seg-val">PR*2*BLUE CROSS BLUE SHIELD*****PI*00001</span></span>
+<span class="seg"><span class="seg-id">HL*</span><span class="seg-val">2*1*21*1</span><span class="seg-comment">  ~ Information Receiver (Provider)</span></span>
+<span class="seg"><span class="seg-id">NM1*</span><span class="seg-val">1P*2*MEDICAL GROUP INC*****XX*1234567890</span></span>
+<span class="seg"><span class="seg-id">HL*</span><span class="seg-val">3*2*22*0</span><span class="seg-comment">  ~ Subscriber</span></span>
+<span class="seg"><span class="seg-id">TRN*</span><span class="seg-val">1*93175-012547*9877281234</span></span>
+<span class="seg"><span class="seg-id">NM1*</span><span class="seg-val">IL*1*DOE*JANE****MI*XYZ123456789</span></span>
+<span class="seg"><span class="seg-id">REF*</span><span class="seg-val">6P*GRP00445</span><span class="seg-comment">  ~ Group Number</span></span>
+<span class="seg"><span class="seg-id">DMG*</span><span class="seg-val">D8*19850615*F</span></span>
+<span class="seg"><span class="seg-id">DTP*</span><span class="seg-val">291*D8*20250312</span></span>
+<span class="seg"><span class="seg-id">EQ*</span><span class="seg-val">30</span><span class="seg-comment">  ~ Health Benefit Plan Coverage</span></span>
+<span class="seg"><span class="seg-id">SE*</span><span class="seg-val">12*0001</span></span>
+<span class="seg"><span class="seg-id">GE*</span><span class="seg-val">1*1</span></span>
+<span class="seg"><span class="seg-id">IEA*</span><span class="seg-val">1*000000001</span></span>
+              </div>
+            </div>
+
+            <div class="card" id="card271" style="display:none">
+              <div class="card-header">
+                <div class="card-title">271 — Eligibility Response</div>
+                <span class="pill pill-green">● ELIGIBLE</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:3px">COVERAGE STATUS</div><div style="font-size:13px;font-weight:600;color:var(--green)">Active</div></div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:3px">PLAN NAME</div><div style="font-size:13px;font-weight:600">BCBS PPO Gold</div></div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:3px">DEDUCTIBLE (Ind/Fam)</div><div style="font-size:13px;font-weight:600;color:var(--blue)">$500 / $1,000</div><div style="font-size:10px;color:var(--text3)">met $320 of $500</div></div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:3px">OOP MAX</div><div style="font-size:13px;font-weight:600;color:var(--blue)">$3,500 / $7,000</div><div style="font-size:10px;color:var(--text3)">met $1,200</div></div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:3px">CO-PAY (PCP)</div><div style="font-size:13px;font-weight:600">$25</div></div>
+                <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:3px">CO-INSURANCE</div><div style="font-size:13px;font-weight:600">20% after deductible</div></div>
+              </div>
+              <div class="alert alert-success">✓ Eligibility verified in 0.38s — Routed via Availity — Trace: 93175-012547</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="elig-batch" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Batch 270 Configuration</div><button class="btn btn-primary btn-sm" onclick="runBatch()">▶ Run Batch</button></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Payer</label>
+                <select>
+                  <option>All Payers (auto-split)</option>
+                  <option>Blue Cross Blue Shield</option>
+                  <option>UnitedHealthcare</option>
+                  <option>Medicare (HETS)</option>
+                  <option>Medicaid (State MMIS)</option>
+                  <option>Aetna</option>
+                  <option>Cigna</option>
+                  <option>Humana</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Service Date</label><input value="20250312" style="font-family:var(--mono)"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:10px">
+              <label>Member File (CSV)</label>
+              <div style="background:var(--bg3);border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;color:var(--text3);font-size:12px;cursor:pointer">
+                Drop CSV or click to upload<br>
+                <span style="font-size:10px;font-family:var(--mono)">member_id, first_name, last_name, dob, payer_id, mbi</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+              <label class="checkbox-row"><input type="checkbox" checked><span>Auto-split by payer</span></label>
+              <label class="checkbox-row"><input type="checkbox" checked><span>Route Medicare → HETS</span></label>
+              <label class="checkbox-row"><input type="checkbox" checked><span>Route Medicaid → MMIS</span></label>
+              <label class="checkbox-row"><input type="checkbox" checked><span>Auto-retry rejections</span></label>
+              <label class="checkbox-row"><input type="checkbox"><span>Insurance discovery fallback</span></label>
+            </div>
+            <div class="alert alert-info">ℹ Batch limit: 5,000 txns per ISA envelope. Medicare HETS supports up to 1,000 inquiries per batch file.</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Batch Queue Status</div></div>
+            <table>
+              <thead><tr><th>Batch ID</th><th>Payer</th><th>Count</th><th>Route</th><th>Status</th><th>Response</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">BTH-2025-0891</td><td>BCBS</td><td>412</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td><span class="pill pill-green">Done</span></td><td>409/412</td></tr>
+                <tr><td class="mono">BTH-2025-0890</td><td>Medicare</td><td>98</td><td><span class="pill pill-blue" style="font-size:9px">HETS Direct</span></td><td><span class="pill pill-green">Done</span></td><td>98/98</td></tr>
+                <tr><td class="mono">BTH-2025-0889</td><td>Aetna</td><td>177</td><td><span class="pill pill-teal" style="font-size:9px">Optum API</span></td><td><span class="pill pill-amber">Pending</span></td><td>142/177</td></tr>
+                <tr><td class="mono">BTH-2025-0888</td><td>UHC</td><td>65</td><td><span class="pill pill-teal" style="font-size:9px">UHC Direct</span></td><td><span class="pill pill-green">Done</span></td><td>65/65</td></tr>
+                <tr><td class="mono">BTH-2025-0887</td><td>CA Medicaid</td><td>88</td><td><span class="pill pill-purple" style="font-size:9px">MMIS</span></td><td><span class="pill pill-green">Done</span></td><td>85/88</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="elig-discovery" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Insurance Discovery</div><button class="btn btn-primary btn-sm" onclick="runDiscovery()">▶ Discover</button></div>
+            <div class="alert alert-info">ℹ Sweeps 900+ payers simultaneously using patient demographics — commercial, Medicare, Medicaid, managed care.</div>
+            <div class="form-row"><div class="form-group"><label>First Name</label><input value="ROBERT"></div><div class="form-group"><label>Last Name</label><input value="SMITH"></div></div>
+            <div class="form-row"><div class="form-group"><label>DOB</label><input value="19620308" style="font-family:var(--mono)"></div><div class="form-group"><label>SSN (last 4)</label><input value="4521"></div></div>
+            <div class="form-row"><div class="form-group"><label>Address</label><input value="123 MAIN ST"></div><div class="form-group"><label>Zip</label><input value="90210"></div></div>
+          </div>
+          <div class="card" id="discovery-results" style="display:none">
+            <div class="card-header"><div class="card-title">Discovered Coverage</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="background:var(--bg3);border:1px solid rgba(26,115,232,0.3);border-radius:8px;padding:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-weight:600;font-size:13px">Blue Cross Blue Shield</span><span class="pill pill-green">PRIMARY</span></div>
+                <div style="font-size:11px;color:var(--text2)">Member ID: XYZ99102312 · Group: GRP00445</div>
+                <div style="font-size:10px;font-family:var(--mono);color:var(--text3)">Eff: 01/01/2024 · Term: None · Route: Availity</div>
+              </div>
+              <div style="background:#e8f0fe;border:1px solid #c5d8fd;border-radius:8px;padding:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-weight:600;font-size:13px">Medicare Part B</span><span class="pill pill-blue">SECONDARY</span></div>
+                <div style="font-size:11px;color:var(--text2)">MBI: 1EG4-TE5-MK72 · MSP: employer group is primary</div>
+                <div style="font-size:10px;font-family:var(--mono);color:var(--text3)">Eff: 01/01/2022 · IRMAA: N · Route: HETS Direct</div>
+              </div>
+              <div style="background:#f3e8fd;border:1px solid #e1b4f5;border-radius:8px;padding:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-weight:600;font-size:13px">Humana Part D</span><span class="pill pill-purple">DRUG</span></div>
+                <div style="font-size:11px;color:var(--text2)">RxBIN: 610591 · Plan: H0028-004</div>
+                <div style="font-size:10px;font-family:var(--mono);color:var(--text3)">PDP — Medicare Part D · Route: MARx</div>
+              </div>
+            </div>
+          </div>
+          <div class="card" id="discovery-placeholder">
+            <div style="text-align:center;padding:30px;color:var(--text3);font-size:12px">Run discovery to identify active coverage across all payers</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="elig-mbi" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Medicare Beneficiary Identifier Lookup</div><button class="btn btn-primary btn-sm" onclick="runMBI()">▶ Lookup</button></div>
+            <div class="alert alert-info">ℹ Retrieves MBI via CMS HETS 270 inquiry. Routes directly to Medicare — bypasses clearinghouse.</div>
+            <div class="form-row"><div class="form-group"><label>First Name</label><input value="DOROTHY"></div><div class="form-group"><label>Last Name</label><input value="JOHNSON"></div></div>
+            <div class="form-row"><div class="form-group"><label>DOB</label><input value="19450822" style="font-family:var(--mono)"></div><div class="form-group"><label>Gender</label><select><option>Female</option><option>Male</option></select></div></div>
+            <div class="form-row"><div class="form-group"><label>HICN (if known)</label><input value="1AA4TC2GR59"></div><div class="form-group"><label>Medicare Part</label><select><option>A &amp; B</option><option>A only</option><option>B only</option><option>D (PDP)</option></select></div></div>
+          </div>
+          <div class="card" id="mbi-result" style="display:none">
+            <div class="card-header"><div class="card-title">MBI Result</div><span class="pill pill-green">● FOUND</span></div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:12px">
+              <div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">MEDICARE BENEFICIARY IDENTIFIER</div>
+              <div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--blue);letter-spacing:3px">1EG4-TE5-MK72</div>
+            </div>
+            <div class="grid-2" style="gap:8px">
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3)">PART A</div><div style="font-size:12px;font-weight:600;color:var(--green)">Eff 01/01/2010</div></div>
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3)">PART B</div><div style="font-size:12px;font-weight:600;color:var(--green)">Eff 01/01/2010</div></div>
+            </div>
+            <div class="alert alert-success" style="margin-top:10px">✓ MBI via HETS Direct · 270 REF*MB generated · 1.14s</div>
+          </div>
+          <div id="mbi-placeholder" class="card"><div style="text-align:center;padding:30px;color:var(--text3);font-size:12px">Enter patient information and click Lookup</div></div>
+        </div>
+      </div>
+
+      <div id="elig-cob" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Coordination of Benefits (COB) Check</div><button class="btn btn-primary btn-sm">▶ Run COB</button></div>
+          <div class="alert alert-warn">⚠ COB order verified via HETS (Medicare MSP), MMIS (Medicaid), and clearinghouse 271 AAA loop. Verify per NAIC rules and CMS MSP guidelines.</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Payer</th><th>Payer ID</th><th>Route</th><th>Sequence</th><th>Member ID</th><th>Effective</th><th>COB Type</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Blue Cross Blue Shield</td><td class="mono">00001</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td><span class="pill pill-teal">Primary</span></td><td class="mono">XYZ123456789</td><td>01/01/2024</td><td>Employer Group</td><td><span class="pill pill-green">Active</span></td></tr>
+                <tr><td>Medicare Part B</td><td class="mono">00995</td><td><span class="pill pill-blue" style="font-size:9px">HETS Direct</span></td><td><span class="pill pill-blue">Secondary</span></td><td class="mono">1EG4-TE5-MK72</td><td>01/01/2022</td><td>Medicare MSP</td><td><span class="pill pill-green">Active</span></td></tr>
+                <tr><td>Medicaid (CA)</td><td class="mono">68069</td><td><span class="pill pill-purple" style="font-size:9px">MMIS</span></td><td><span class="pill pill-purple">Tertiary</span></td><td class="mono">MA00192871</td><td>03/01/2024</td><td>Medicaid LIPA</td><td><span class="pill pill-amber">Verify</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CLAIMS 837P ══════════ -->
+    <div class="view" id="view-claims837p">
+      <div class="section-hdr">
+        <div class="section-hdr-icon blue">◧</div>
+        <div>
+          <div class="section-hdr-title">Professional Claims</div>
+          <div class="section-hdr-sub">CMS-1500 equivalent — payer-specific edits auto-load based on payer selection</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">837P</span></div>
+      </div>
+
+      <div class="tabs" id="p-tabs">
+        <div class="tab active" onclick="switchTab('p','entry')">Claim Entry</div>
+        <div class="tab" onclick="switchTab('p','edits')">Edit Engine</div>
+        <div class="tab" onclick="switchTab('p','queue')">Claim Queue</div>
+        <div class="tab" onclick="switchTab('p','preview')">837P Preview</div>
+      </div>
+
+      <div id="p-entry">
+        <div class="grid-2">
+          <div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Patient / Subscriber Info</div></div>
+              <div class="form-row">
+                <div class="form-group"><label>Patient Last</label><input value="WILSON"></div>
+                <div class="form-group"><label>Patient First</label><input value="MARK"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>DOB</label><input value="19780910" style="font-family:var(--mono)"></div>
+                <div class="form-group"><label>Gender</label><select><option>Male</option><option>Female</option></select></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Member ID</label><input value="UHC99887766"></div>
+                <div class="form-group"><label>Group No.</label><input value="GRP112233"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Payer</label>
+                  <select id="claim-payer" onchange="loadPayerEdits()">
+                    <option value="87726">UnitedHealthcare (87726)</option>
+                    <option value="00001">Blue Cross Blue Shield (00001)</option>
+                    <option value="60054">Aetna / CVS Health (60054)</option>
+                    <option value="62308">Cigna / Evernorth (62308)</option>
+                    <option value="61101">Humana (61101)</option>
+                    <option value="00995">Medicare (00995)</option>
+                    <option value="MMIS">Medicaid (MMIS)</option>
+                    <option value="00120">Anthem / Elevance (00120)</option>
+                    <option value="68069">Centene / WellCare (68069)</option>
+                    <option value="TRICR">Tricare (74284)</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Payer ID</label><input id="claim-payer-id" value="87726" style="font-family:var(--mono)"></div>
+              </div>
+              <div id="payer-rules-notice" class="alert alert-info" style="font-size:11px;padding:7px 12px">ℹ UHC rules loaded: requires prior auth for select CPTs, modifier validation, taxonomy cross-check</div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Rendering Provider</div></div>
+              <div class="form-row">
+                <div class="form-group"><label>NPI</label><input value="9876543210"></div>
+                <div class="form-group"><label>TIN / EIN</label><input value="45-6789012"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Last / Org Name</label><input value="SMITH"></div>
+                <div class="form-group"><label>First</label><input value="PATRICIA"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Taxonomy</label><input value="207Q00000X"></div>
+                <div class="form-group"><label>POS</label><select><option>11 — Office</option><option>21 — Inpatient</option><option>23 — ER</option><option>22 — Outpatient</option></select></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Service Lines</div>
+                <button class="btn btn-secondary btn-sm" onclick="addSvcLine()">+ Add Line</button>
+              </div>
+              <table id="svc-table">
+                <thead><tr><th>#</th><th>Date</th><th>CPT</th><th>Mod</th><th>DX Ptr</th><th>Units</th><th>Charge</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td><input style="width:90px;padding:4px" value="20250312"></td><td><input style="width:70px;padding:4px" value="99213"></td><td><input style="width:50px;padding:4px" value="25"></td><td><input style="width:50px;padding:4px" value="1"></td><td><input style="width:45px;padding:4px" value="1"></td><td><input style="width:70px;padding:4px" value="150.00"></td><td><button class="btn btn-danger btn-xs">✕</button></td></tr>
+                  <tr><td>2</td><td><input style="width:90px;padding:4px" value="20250312"></td><td><input style="width:70px;padding:4px" value="93000"></td><td><input style="width:50px;padding:4px" value=""></td><td><input style="width:50px;padding:4px" value="1,2"></td><td><input style="width:45px;padding:4px" value="1"></td><td><input style="width:70px;padding:4px" value="85.00"></td><td><button class="btn btn-danger btn-xs">✕</button></td></tr>
+                </tbody>
+              </table>
+              <div style="text-align:right;padding-top:10px;border-top:1px solid var(--border);margin-top:10px">
+                <span style="font-size:12px;color:var(--text2)">Total Charge: </span>
+                <span style="font-family:var(--mono);font-size:14px;color:var(--blue);font-weight:700">$235.00</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Diagnosis Codes</div></div>
+              <div class="form-row">
+                <div class="form-group"><label>DX 1 (Principal)</label><input value="Z00.00"></div>
+                <div class="form-group"><label>DX 2</label><input value="I10"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>DX 3</label><input value="E11.9"></div>
+                <div class="form-group"><label>DX 4</label><input placeholder="ICD-10-CM"></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn btn-secondary btn-sm" onclick="validateClaim()">⚙ Run Edits</button>
+                <button class="btn btn-primary btn-sm" onclick="submitClaim837p()">▶ Submit Claim</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="p-edits" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Automated Edit Engine — UHC Rules</div></div>
+            <div class="alert alert-success">✓ 6 edits passed · 1 warning · 0 hard stops</div>
+            <ul class="rule-list">
+              <li class="rule-item"><span class="rule-code">EDI-001</span><span class="rule-desc">NPI format — 10 digits, Luhn check passed</span><span class="pill pill-green">PASS</span></li>
+              <li class="rule-item"><span class="rule-code">EDI-007</span><span class="rule-desc">CPT 99213 valid for POS 11 Office</span><span class="pill pill-green">PASS</span></li>
+              <li class="rule-item"><span class="rule-code">EDI-012</span><span class="rule-desc">Modifier 25 required on E&amp;M with procedure</span><span class="pill pill-green">PASS</span></li>
+              <li class="rule-item"><span class="rule-code">EDI-044</span><span class="rule-desc">Taxonomy 207Q00000X cross-reference NPI registry</span><span class="pill pill-green">PASS</span></li>
+              <li class="rule-item"><span class="rule-code">EDI-088</span><span class="rule-desc">DX Z00.00 — confirm PCP wellness billing status</span><span class="pill pill-amber">WARN</span></li>
+              <li class="rule-item"><span class="rule-code">UHC-031</span><span class="rule-desc">UHC: Prior auth check — 93000 ≤ 1 unit, no auth required</span><span class="pill pill-green">PASS</span></li>
+              <li class="rule-item"><span class="rule-code">UHC-088</span><span class="rule-desc">UHC: Member eligibility verified — ID UHC99887766 active</span><span class="pill pill-green">PASS</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Payer Rule Sets Loaded</div></div>
+            <div style="margin-bottom:12px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                <span class="pill pill-green">UHC Commercial Rules</span>
+                <span class="pill pill-blue">NCCI 2025 Q1</span>
+                <span class="pill pill-teal">MUE Rules</span>
+                <span class="pill pill-amber">LCD Policies</span>
+              </div>
+            </div>
+            <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Structural (ISA/GS/ST)</span><span style="font-family:var(--mono);font-size:11px;color:var(--green)">All Pass</span></div><div class="meter"><div class="meter-fill" style="width:100%;background:var(--green)"></div></div></div>
+            <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">Provider / Taxonomy Validation</span><span style="font-family:var(--mono);font-size:11px;color:var(--green)">All Pass</span></div><div class="meter"><div class="meter-fill" style="width:100%;background:var(--green)"></div></div></div>
+            <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">DX / CPT Medical Necessity</span><span style="font-family:var(--mono);font-size:11px;color:var(--amber)">1 Warning</span></div><div class="meter"><div class="meter-fill" style="width:80%;background:var(--amber)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px">UHC Payer-Specific Rules</span><span style="font-family:var(--mono);font-size:11px;color:var(--green)">All Pass</span></div><div class="meter"><div class="meter-fill" style="width:100%;background:var(--green)"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="p-queue" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Professional Claim Queue — All Payers</div><button class="btn btn-primary btn-sm">▶ Submit Selected</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th><input type="checkbox" style="accent-color:var(--blue)"></th><th>Claim ID</th><th>Patient</th><th>Payer</th><th>Route</th><th>DOS</th><th>Charge</th><th>Edits</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><input type="checkbox" checked style="accent-color:var(--blue)"></td><td class="mono">CLM-P-001892</td><td>WILSON, M.</td><td>UHC</td><td><span class="pill pill-teal" style="font-size:9px">Optum API</span></td><td>03/12</td><td class="mono">$235.00</td><td><span class="pill pill-amber">1 Warn</span></td><td><span class="pill pill-blue">Ready</span></td></tr>
+                <tr><td><input type="checkbox" checked style="accent-color:var(--blue)"></td><td class="mono">CLM-P-001891</td><td>GARCIA, R.</td><td>BCBS</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td>03/12</td><td class="mono">$320.00</td><td><span class="pill pill-green">Clear</span></td><td><span class="pill pill-blue">Ready</span></td></tr>
+                <tr><td><input type="checkbox" style="accent-color:var(--blue)"></td><td class="mono">CLM-P-001890</td><td>NGUYEN, P.</td><td>Aetna</td><td><span class="pill pill-teal" style="font-size:9px">Aetna API</span></td><td>03/11</td><td class="mono">$195.00</td><td><span class="pill pill-red">1 Error</span></td><td><span class="pill pill-red">Hold</span></td></tr>
+                <tr><td><input type="checkbox" checked style="accent-color:var(--blue)"></td><td class="mono">CLM-P-001889</td><td>PATEL, A.</td><td>Medicare</td><td><span class="pill pill-blue" style="font-size:9px">DDE Direct</span></td><td>03/11</td><td class="mono">$410.00</td><td><span class="pill pill-green">Clear</span></td><td><span class="pill pill-green">Accepted</span></td></tr>
+                <tr><td><input type="checkbox" checked style="accent-color:var(--blue)"></td><td class="mono">CLM-P-001888</td><td>TORRES, M.</td><td>Medicaid CA</td><td><span class="pill pill-purple" style="font-size:9px">MMIS</span></td><td>03/11</td><td class="mono">$180.00</td><td><span class="pill pill-green">Clear</span></td><td><span class="pill pill-blue">Ready</span></td></tr>
+                <tr><td><input type="checkbox" checked style="accent-color:var(--blue)"></td><td class="mono">CLM-P-001887</td><td>CHEN, W.</td><td>Humana</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td>03/11</td><td class="mono">$275.00</td><td><span class="pill pill-green">Clear</span></td><td><span class="pill pill-blue">Ready</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="p-preview" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">837P Transaction Preview</div><button class="btn btn-ghost btn-sm">⬇ Download</button></div>
+          <div class="edi-block">
+<span class="seg"><span class="seg-id">ISA*</span>00*          *00*          *ZZ*SUBMITTER       *ZZ*87726          *250312*1432*^*00501*000000912*0*P*:</span>
+<span class="seg"><span class="seg-id">GS*</span>HC*SENDER*87726*20250312*1432*912*X*005010X222A1</span>
+<span class="seg"><span class="seg-id">ST*</span>837*0001*005010X222A1</span>
+<span class="seg"><span class="seg-comment">  ~ 1000A SUBMITTER</span></span>
+<span class="seg"><span class="seg-id">NM1*</span>41*2*CLEARPATH MEDICAL GROUP*****46*TGJ23</span>
+<span class="seg"><span class="seg-comment">  ~ 1000B RECEIVER (UHC)</span></span>
+<span class="seg"><span class="seg-id">NM1*</span>40*2*UNITEDHEALTHCARE*****46*87726</span>
+<span class="seg"><span class="seg-comment">  ~ 2000A BILLING PROVIDER</span></span>
+<span class="seg"><span class="seg-id">HL*</span>1**20*1</span>
+<span class="seg"><span class="seg-id">NM1*</span>85*2*CLEARPATH MEDICAL GROUP*****XX*9876543210</span>
+<span class="seg"><span class="seg-id">REF*</span>EI*456789012</span>
+<span class="seg"><span class="seg-comment">  ~ 2000B SUBSCRIBER</span></span>
+<span class="seg"><span class="seg-id">HL*</span>2*1*22*0</span>
+<span class="seg"><span class="seg-id">SBR*</span>P*18*GRP112233**CI****</span>
+<span class="seg"><span class="seg-id">NM1*</span>IL*1*WILSON*MARK****MI*UHC99887766</span>
+<span class="seg"><span class="seg-id">DMG*</span>D8*19780910*M</span>
+<span class="seg"><span class="seg-comment">  ~ 2300 CLAIM</span></span>
+<span class="seg"><span class="seg-id">CLM*</span>CLM-P-001892*235.00**11:B:1*Y*A*Y*I</span>
+<span class="seg"><span class="seg-id">HI*</span>ABK:Z0000*ABF:I10*ABF:E119</span>
+<span class="seg"><span class="seg-id">LX*</span>1</span>
+<span class="seg"><span class="seg-id">SV1*</span>HC:99213:25**UN*1***1</span>
+<span class="seg"><span class="seg-id">LX*</span>2</span>
+<span class="seg"><span class="seg-id">SV1*</span>HC:93000***UN*1***1:2</span>
+<span class="seg"><span class="seg-id">SE*</span>28*0001</span>
+<span class="seg"><span class="seg-id">IEA*</span>1*000000912</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CLAIMS 837D ══════════ -->
+    <div class="view" id="view-claims837d">
+      <div class="section-hdr">
+        <div class="section-hdr-icon" style="background:rgba(168,85,247,0.1)">🦷</div>
+        <div>
+          <div class="section-hdr-title">Dental Claims</div>
+          <div class="section-hdr-sub">837D — ADA CDT procedure codes, tooth/surface/quadrant, ortho/prostho</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">837D</span></div>
+      </div>
+      <div id="p837d-tabs" class="tabs">
+        <div class="tab active" onclick="switchTab('p837d','entry')">Claim Entry</div>
+        <div class="tab" onclick="switchTab('p837d','edits')">Edit Engine</div>
+        <div class="tab" onclick="switchTab('p837d','queue')">Queue</div>
+      </div>
+      <div id="p837d-entry">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Subscriber &amp; Payer</div></div>
+          <div class="form-row">
+            <div class="form-group"><label>Payer</label><select onchange="document.getElementById('claim837d-payer-id').value=this.value"><option value="00001">BCBS (00001)</option><option value="62308">Cigna (62308)</option><option value="60054">Aetna (60054)</option><option value="87726">UHC (87726)</option><option value="00995">Medicare (00995)</option></select></div>
+            <div class="form-group"><label>Payer ID</label><input id="claim837d-payer-id" value="00001"></div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group"><label>Subscriber ID</label><input placeholder="Member ID"></div>
+            <div class="form-group"><label>Last Name</label><input placeholder="SMITH"></div>
+            <div class="form-group"><label>First Name</label><input placeholder="JOHN"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Date of Birth</label><input type="date"></div>
+            <div class="form-group"><label>Group Number</label><input placeholder="GRP-12345"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Rendering Provider</div></div>
+          <div class="form-row">
+            <div class="form-group"><label>Provider NPI</label><input placeholder="1234567890"></div>
+            <div class="form-group"><label>License Number</label><input placeholder="D-123456"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Provider Name</label><input placeholder="DR. JANE DOE DDS"></div>
+            <div class="form-group"><label>Taxonomy Code</label><input value="1223G0001X" placeholder="Dental taxonomy"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Procedure Lines <span class="card-edi">CDT</span></div>
+            <button class="btn btn-ghost btn-sm" onclick="addSvcLine837d()">+ Add Line</button>
+          </div>
+          <div class="table-wrap">
+            <table id="svc-table-837d">
+              <thead><tr><th>#</th><th>Date</th><th>CDT Code</th><th>Tooth</th><th>Surface</th><th>Qty</th><th>Fee</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><input style="width:90px;padding:4px" value="2025-03-12"></td><td><input style="width:70px;padding:4px" value="D2391"></td><td><input style="width:40px;padding:4px" value="14"></td><td><input style="width:50px;padding:4px" value="MO"></td><td><input style="width:35px;padding:4px" value="1"></td><td><input style="width:70px;padding:4px" value="185.00"></td><td><button class="btn btn-danger btn-xs" onclick="this.closest('tr').remove()">✕</button></td></tr>
+                <tr><td>2</td><td><input style="width:90px;padding:4px" value="2025-03-12"></td><td><input style="width:70px;padding:4px" value="D0274"></td><td><input style="width:40px;padding:4px" value="BW"></td><td><input style="width:50px;padding:4px"></td><td><input style="width:35px;padding:4px" value="1"></td><td><input style="width:70px;padding:4px" value="62.00"></td><td><button class="btn btn-danger btn-xs" onclick="this.closest('tr').remove()">✕</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="btn btn-secondary" onclick="switchTab('p837d','edits');toast('Edit Engine','Running dental-specific rules...');setTimeout(()=>toast('Edits Complete','4 pass · 0 warnings'),800)">Run Edits</button>
+          <button class="btn btn-primary" onclick="toast('837D Submitted','Dental claim routed via Availity → BCBS');switchTab('p837d','queue')">▶ Submit 837D</button>
+        </div>
+      </div>
+      <div id="p837d-edits" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Dental Edit Results</div><span class="pill pill-green">4 Pass · 0 Errors</span></div>
+          <ul class="rule-list">
+            <li class="rule-item"><span class="rule-code">D-NPI-01</span><span class="rule-desc">Rendering provider NPI — valid 10-digit</span><span class="pill pill-green">PASS</span></li>
+            <li class="rule-item"><span class="rule-code">D-CDT-01</span><span class="rule-desc">CDT code D2391 — valid, covered by payer schedule</span><span class="pill pill-green">PASS</span></li>
+            <li class="rule-item"><span class="rule-code">D-TOOTH-01</span><span class="rule-desc">Tooth number 14 — valid permanent tooth</span><span class="pill pill-green">PASS</span></li>
+            <li class="rule-item"><span class="rule-code">D-SURF-01</span><span class="rule-desc">Surface code MO — valid for posterior composite</span><span class="pill pill-green">PASS</span></li>
+          </ul>
+        </div>
+      </div>
+      <div id="p837d-queue" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Dental Claims Queue</div></div>
+          <div class="table-wrap"><table><thead><tr><th>Claim ID</th><th>Patient</th><th>CDT</th><th>Payer</th><th>Fee</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">CLM-D-00041</td><td>NGUYEN, P.</td><td>D2391, D0274</td><td>BCBS</td><td>$247.00</td><td><span class="pill pill-green">Submitted</span></td></tr>
+            <tr><td class="mono">CLM-D-00039</td><td>WALSH, K.</td><td>D1110</td><td>Cigna</td><td>$105.00</td><td><span class="pill pill-amber">Pending</span></td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CLAIMS 837I ══════════ -->
+    <div class="view" id="view-claims837i">
+      <div class="section-hdr">
+        <div class="section-hdr-icon" style="background:rgba(59,130,246,0.1)">🏥</div>
+        <div>
+          <div class="section-hdr-title">Institutional Claims</div>
+          <div class="section-hdr-sub">837I — UB-04, revenue codes, DRG, inpatient/outpatient facility billing</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">837I</span></div>
+      </div>
+      <div id="p837i-tabs" class="tabs">
+        <div class="tab active" onclick="switchTab('p837i','entry')">Claim Entry</div>
+        <div class="tab" onclick="switchTab('p837i','edits')">Edit Engine</div>
+        <div class="tab" onclick="switchTab('p837i','queue')">Queue</div>
+      </div>
+      <div id="p837i-entry">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Facility &amp; Payer</div></div>
+          <div class="form-row">
+            <div class="form-group"><label>Payer</label><select onchange="document.getElementById('claim837i-payer-id').value=this.value"><option value="00995">Medicare (00995)</option><option value="00001">BCBS (00001)</option><option value="87726">UHC (87726)</option><option value="MMIS">Medicaid (MMIS)</option></select></div>
+            <div class="form-group"><label>Payer ID</label><input id="claim837i-payer-id" value="00995"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Facility NPI</label><input placeholder="Billing NPI (Type 2)"></div>
+            <div class="form-group"><label>Taxonomy Code</label><input value="282N00000X" placeholder="Hospital taxonomy"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Bill Type</label><select><option>111 — Inpatient Hospital</option><option>131 — Outpatient Hospital</option><option>211 — Skilled Nursing Facility</option><option>321 — Home Health</option><option>711 — Rural Health Clinic</option></select></div>
+            <div class="form-group"><label>Frequency Code</label><select><option>1 — Admit thru Discharge</option><option>7 — Replace (Adjustment)</option><option>8 — Void/Cancel</option></select></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Patient &amp; Admission</div></div>
+          <div class="form-row-3">
+            <div class="form-group"><label>Member ID</label><input placeholder="Medicare/Insurance ID"></div>
+            <div class="form-group"><label>Last Name</label><input placeholder="PATIENT"></div>
+            <div class="form-group"><label>First Name</label><input placeholder="NAME"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Admit Date</label><input type="date"></div>
+            <div class="form-group"><label>Discharge Date</label><input type="date"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Admit Diagnosis (ICD-10)</label><input value="N18.4" placeholder="ICD-10-CM"></div>
+            <div class="form-group"><label>Principal Diagnosis</label><input value="N18.4" placeholder="ICD-10-CM"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>DRG</label><input placeholder="e.g. 682"></div>
+            <div class="form-group"><label>Discharge Status</label><select><option>01 — Home</option><option>02 — Transfer/Short-Term Hospital</option><option>03 — SNF</option><option>06 — Home w/ HHA</option><option>20 — Expired</option></select></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Revenue Lines <span class="card-edi">UB-04</span></div>
+            <button class="btn btn-ghost btn-sm" onclick="addRevLine()">+ Add Line</button>
+          </div>
+          <div class="table-wrap">
+            <table id="rev-table">
+              <thead><tr><th>#</th><th>Rev Code</th><th>Description</th><th>HCPCS</th><th>Units</th><th>Charges</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td><input style="width:60px;padding:4px" value="0450"></td><td><input style="width:140px;padding:4px" value="Emergency Room"></td><td><input style="width:60px;padding:4px" value="99285"></td><td><input style="width:40px;padding:4px" value="1"></td><td><input style="width:80px;padding:4px" value="1850.00"></td><td><button class="btn btn-danger btn-xs" onclick="this.closest('tr').remove()">✕</button></td></tr>
+                <tr><td>2</td><td><input style="width:60px;padding:4px" value="0250"></td><td><input style="width:140px;padding:4px" value="Pharmacy"></td><td><input style="width:60px;padding:4px"></td><td><input style="width:40px;padding:4px" value="3"></td><td><input style="width:80px;padding:4px" value="420.00"></td><td><button class="btn btn-danger btn-xs" onclick="this.closest('tr').remove()">✕</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="btn btn-secondary" onclick="switchTab('p837i','edits');toast('Edit Engine','Running institutional claim rules...');setTimeout(()=>toast('Edits Complete','7 pass · 1 warning · 0 hard stops'),900)">Run Edits</button>
+          <button class="btn btn-primary" onclick="toast('837I Submitted','Institutional claim routed via Availity → Medicare');switchTab('p837i','queue')">▶ Submit 837I</button>
+        </div>
+      </div>
+      <div id="p837i-edits" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Institutional Edit Results</div><span class="pill pill-amber">7 Pass · 1 Warning</span></div>
+          <ul class="rule-list">
+            <li class="rule-item"><span class="rule-code">I-NPI-01</span><span class="rule-desc">Facility NPI — valid Type 2 NPI</span><span class="pill pill-green">PASS</span></li>
+            <li class="rule-item"><span class="rule-code">I-REV-01</span><span class="rule-desc">Revenue code 0450 (ER) — valid, HCPCS 99285 present</span><span class="pill pill-green">PASS</span></li>
+            <li class="rule-item"><span class="rule-code">I-DX-01</span><span class="rule-desc">Principal diagnosis N18.4 — valid ICD-10-CM, POA required</span><span class="pill pill-amber">WARN — add POA indicator</span></li>
+            <li class="rule-item"><span class="rule-code">I-DRG-01</span><span class="rule-desc">DRG not entered — system will assign based on grouper</span><span class="pill pill-green">PASS</span></li>
+            <li class="rule-item"><span class="rule-code">I-BILL-01</span><span class="rule-desc">Bill type 111 — inpatient admit/discharge dates required</span><span class="pill pill-green">PASS</span></li>
+          </ul>
+        </div>
+      </div>
+      <div id="p837i-queue" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Institutional Claims Queue</div></div>
+          <div class="table-wrap"><table><thead><tr><th>Claim ID</th><th>Patient</th><th>Bill Type</th><th>Payer</th><th>Charges</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">CLM-I-00291</td><td>CHEN, W.</td><td>131 — OP Hospital</td><td>Medicare</td><td>$2,270.00</td><td><span class="pill pill-green">Submitted</span></td></tr>
+            <tr><td class="mono">CLM-I-00288</td><td>MILLER, S.</td><td>111 — IP Hospital</td><td>BCBS</td><td>$18,400.00</td><td><span class="pill pill-amber">On Hold</span></td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ 277CA ══════════ -->
+    <div class="view" id="view-ack277ca">
+      <div class="section-hdr">
+        <div class="section-hdr-icon green">◉</div>
+        <div>
+          <div class="section-hdr-title">Claim Acknowledgements</div>
+          <div class="section-hdr-sub">Inbound from all connected payers — accepted, rejected, pended</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">277CA</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Inbound 277CA Queue — All Payers</div>
+          <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm">⬇ Export</button><button class="btn btn-secondary btn-sm">⟳ Refresh</button></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Claim ID</th><th>Patient</th><th>Payer</th><th>Route</th><th>ICN</th><th>Status</th><th>277 Code</th><th>Received</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">CLM-P-001889</td><td>PATEL, ANITA</td><td>Medicare</td><td><span class="pill pill-blue" style="font-size:9px">DDE</span></td><td class="mono">2025071400123</td><td><span class="pill pill-green">A1 — Accepted</span></td><td class="mono">A1:20</td><td>14:01</td><td><button class="btn btn-ghost btn-xs">View</button></td></tr>
+              <tr><td class="mono">CLM-P-001885</td><td>THOMPSON, R.</td><td>Aetna</td><td><span class="pill pill-teal" style="font-size:9px">Optum</span></td><td class="mono">—</td><td><span class="pill pill-red">A2 — Rejected</span></td><td class="mono">A2:129</td><td>13:55</td><td><button class="btn btn-danger btn-xs" onclick="show277Detail()">Fix</button></td></tr>
+              <tr><td class="mono">CLM-I-000438</td><td>HERNANDEZ, M.</td><td>BCBS</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td class="mono">—</td><td><span class="pill pill-amber">A4 — Pended</span></td><td class="mono">A4:N/A</td><td>13:44</td><td><button class="btn btn-secondary btn-xs">Attach</button></td></tr>
+              <tr><td class="mono">CLM-D-004418</td><td>MILLER, KATE</td><td>Delta Dental</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td class="mono">DDT20250312A</td><td><span class="pill pill-green">A1 — Accepted</span></td><td class="mono">A1:20</td><td>13:30</td><td><button class="btn btn-ghost btn-xs">View</button></td></tr>
+              <tr><td class="mono">CLM-P-001882</td><td>TORRES, M.</td><td>Medicaid CA</td><td><span class="pill pill-purple" style="font-size:9px">MMIS</span></td><td class="mono">CA2025031299A</td><td><span class="pill pill-green">A1 — Accepted</span></td><td class="mono">A1:20</td><td>13:20</td><td><button class="btn btn-ghost btn-xs">View</button></td></tr>
+              <tr><td class="mono">CLM-P-001880</td><td>CHEN, WEI</td><td>UHC</td><td><span class="pill pill-teal" style="font-size:9px">UHC API</span></td><td class="mono">UHC202503121A</td><td><span class="pill pill-green">A1 — Accepted</span></td><td class="mono">A1:20</td><td>13:05</td><td><button class="btn btn-ghost btn-xs">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="detail277" style="display:none">
+        <div class="card-header"><div class="card-title">277CA Detail — CLM-P-001885 REJECTED</div><span class="pill pill-red">A2:129 — Duplicate Claim</span></div>
+        <div class="grid-2">
+          <div>
+            <div class="alert alert-err">✕ Rejection: 129 — Claim submitted previously. ICN already assigned for same service date/provider/member.</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:8px">Action: Verify ICN on original submission. Use Frequency Code 7 (Replacement) and reference original ICN in REF*F8.</div>
+          </div>
+          <div class="edi-block">
+<span class="seg"><span class="seg-id">ST*</span>277*0001*005010X214</span>
+<span class="seg"><span class="seg-id">STC*</span>A2:129:PR*20250312*WQ*3240.00</span>
+<span class="seg"><span class="seg-id">REF*</span>1K*CLM-P-001885</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CLAIM STATUS 276/277 ══════════ -->
+    <div class="view" id="view-status276">
+      <div class="section-hdr">
+        <div class="section-hdr-icon purple">◎</div>
+        <div>
+          <div class="section-hdr-title">Real-Time Claim Status</div>
+          <div class="section-hdr-sub">276/277 inquiry across all payers — HETS for Medicare, MMIS for Medicaid, direct API where available</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">276</span>&nbsp;<span class="card-edi">277</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">276 — Claim Status Inquiry</div><button class="btn btn-primary btn-sm" onclick="submitStatus()">▶ Check Status</button></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Payer</label>
+              <select>
+                <option>Blue Cross Blue Shield (00001)</option>
+                <option>Medicare (00995)</option>
+                <option>UnitedHealthcare (87726)</option>
+                <option>Aetna (60054)</option>
+                <option>Cigna (62308)</option>
+                <option>Humana (61101)</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Claim No. / ICN</label><input value="CLM-P-001889"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Patient Member ID</label><input value="UHC99887766"></div>
+            <div class="form-group"><label>Provider NPI</label><input value="9876543210"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Service Date From</label><input value="20250312" style="font-family:var(--mono)"></div>
+            <div class="form-group"><label>Charge Amount</label><input value="235.00"></div>
+          </div>
+        </div>
+        <div class="card" id="status277-result" style="display:none">
+          <div class="card-header"><div class="card-title">277 — Claim Status Response</div><span class="pill pill-green">● Finalized</span></div>
+          <div class="steps">
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Received</div></div>
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Accepted</div></div>
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Adjudicated</div></div>
+            <div class="step active"><div class="step-dot">4</div><div class="step-label">Payment</div></div>
+            <div class="step"><div class="step-dot">5</div><div class="step-label">ERA</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3)">ICN</div><div style="font-size:12px;font-family:var(--mono);color:var(--blue)">2025071400989</div></div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3)">STATUS</div><div style="font-size:12px;font-weight:600;color:var(--green)">F3 — Finalized</div></div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3)">CHARGE</div><div style="font-size:12px;font-family:var(--mono)">$235.00</div></div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px"><div style="font-size:9px;font-family:var(--mono);color:var(--text3)">ALLOWED</div><div style="font-size:12px;font-family:var(--mono);color:var(--blue)">$198.50</div></div>
+          </div>
+        </div>
+        <div id="status277-placeholder" class="card"><div style="text-align:center;padding:30px;color:var(--text3);font-size:12px">Select payer and submit inquiry to retrieve claim status</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════ REMITTANCE 835 ══════════ -->
+    <div class="view" id="view-remittance835">
+      <div class="section-hdr">
+        <div class="section-hdr-icon green">◈</div>
+        <div>
+          <div class="section-hdr-title">Remittance Advice &amp; ERA Enrollment</div>
+          <div class="section-hdr-sub">Electronic Remittance Advice from all payers — CARC/RARC mapping, auto-posting</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">835</span></div>
+      </div>
+      <div class="tabs" id="r-tabs">
+        <div class="tab active" onclick="switchTab('r','era')">ERA / 835 Viewer</div>
+        <div class="tab" onclick="switchTab('r','enrollment')">ERA Enrollment</div>
+        <div class="tab" onclick="switchTab('r','posting')">Payment Posting</div>
+      </div>
+      <div id="r-era">
+        <div class="grid-4" style="margin-bottom:16px">
+          <div class="stat-card green"><div class="stat-number green">$641k</div><div class="stat-desc">Today's ERA Payments</div><div class="stat-sub">All payers combined</div></div>
+          <div class="stat-card teal"><div class="stat-number teal">$38k</div><div class="stat-desc">Contractual Adjustments</div><div class="stat-sub">CO-45 writeoffs</div></div>
+          <div class="stat-card amber"><div class="stat-number amber">$9.4k</div><div class="stat-desc">Patient Responsibility</div><div class="stat-sub">PR codes</div></div>
+          <div class="stat-card red"><div class="stat-number red">$5.2k</div><div class="stat-desc">Denied — Appeal Req.</div><div class="stat-sub">21 claims</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Inbound 835 Transactions — All Payers</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Check/EFT No.</th><th>Payer</th><th>Route</th><th>Pay Date</th><th>Amount</th><th>Claims</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">EFT-001-0312</td><td>BCBS</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td>03/12</td><td class="mono" style="color:var(--green)">$88,240.00</td><td>18</td><td><span class="pill pill-green">Posted</span></td></tr>
+                <tr><td class="mono">EFT-002-0312</td><td>UHC</td><td><span class="pill pill-teal" style="font-size:9px">UHC API</span></td><td>03/12</td><td class="mono" style="color:var(--green)">$142,100.00</td><td>31</td><td><span class="pill pill-green">Posted</span></td></tr>
+                <tr><td class="mono">CHK-039-2025</td><td>Medicare</td><td><span class="pill pill-blue" style="font-size:9px">DDE/FISS</span></td><td>03/12</td><td class="mono" style="color:var(--green)">$214,880.00</td><td>47</td><td><span class="pill pill-amber">Pending</span></td></tr>
+                <tr><td class="mono">EFT-003-0312</td><td>Aetna</td><td><span class="pill pill-teal" style="font-size:9px">Optum</span></td><td>03/12</td><td class="mono" style="color:var(--green)">$65,780.00</td><td>14</td><td><span class="pill pill-green">Posted</span></td></tr>
+                <tr><td class="mono">EFT-004-0312</td><td>Cigna</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td>03/12</td><td class="mono" style="color:var(--green)">$58,420.00</td><td>12</td><td><span class="pill pill-green">Posted</span></td></tr>
+                <tr><td class="mono">EFT-005-0312</td><td>Humana</td><td><span class="pill pill-teal" style="font-size:9px">Availity</span></td><td>03/12</td><td class="mono" style="color:var(--green)">$44,300.00</td><td>9</td><td><span class="pill pill-green">Posted</span></td></tr>
+                <tr><td class="mono">EFT-006-0312</td><td>Medicaid CA</td><td><span class="pill pill-purple" style="font-size:9px">MMIS</span></td><td>03/12</td><td class="mono" style="color:var(--green)">$27,280.00</td><td>18</td><td><span class="pill pill-green">Posted</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="r-enrollment" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">ERA / EFT Enrollment</div><button class="btn btn-primary btn-sm">▶ Submit Enrollment</button></div>
+            <div class="alert alert-info">ℹ Enroll per NPI/TIN per payer. Medicare and Medicaid ERA enrollment handled via PECOS / state-specific portals.</div>
+            <div class="form-row"><div class="form-group"><label>Provider NPI</label><input value="9876543210"></div><div class="form-group"><label>TIN / EIN</label><input value="45-6789012"></div></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Payer</label>
+                <select>
+                  <option>BCBS (00001)</option><option>UHC (87726)</option><option>Aetna (60054)</option><option>Cigna (62308)</option><option>Humana (61101)</option><option>Medicare (00995) — via PECOS</option><option>Medicaid CA (68069) — via DHCS</option><option>Anthem (00120)</option><option>Centene (68069)</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Enrollment Type</label><select><option>ERA (835) Only</option><option>EFT (ACH) Only</option><option>ERA + EFT (Both)</option></select></div>
+            </div>
+            <div class="form-row"><div class="form-group"><label>Bank Routing No.</label><input value="021000021"></div><div class="form-group"><label>Account Number</label><input value="••••••4421" type="password"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Enrollment Status — All Payers</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Payer</th><th>NPI</th><th>Type</th><th>Enrolled</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>BCBS</td><td class="mono">9876543210</td><td>ERA+EFT</td><td>01/01/24</td><td><span class="pill pill-green">Active</span></td></tr>
+                  <tr><td>UHC</td><td class="mono">9876543210</td><td>ERA+EFT</td><td>03/01/24</td><td><span class="pill pill-green">Active</span></td></tr>
+                  <tr><td>Medicare</td><td class="mono">9876543210</td><td>ERA+EFT</td><td>06/01/23</td><td><span class="pill pill-green">Active</span></td></tr>
+                  <tr><td>Aetna</td><td class="mono">9876543210</td><td>ERA+EFT</td><td>09/01/24</td><td><span class="pill pill-green">Active</span></td></tr>
+                  <tr><td>Medicaid CA</td><td class="mono">9876543210</td><td>ERA only</td><td>11/01/24</td><td><span class="pill pill-green">Active</span></td></tr>
+                  <tr><td>Cigna</td><td class="mono">9876543210</td><td>ERA+EFT</td><td>—</td><td><span class="pill pill-amber">Pending</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="r-posting" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Auto Payment Posting — All Payers</div><button class="btn btn-primary btn-sm">▶ Post All ERA</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Claim ID</th><th>Patient</th><th>Payer</th><th>Charge</th><th>Payment</th><th>Adj.</th><th>Pt Bal.</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">CLM-P-001889</td><td>PATEL, A.</td><td>Medicare</td><td>$410.00</td><td class="mono" style="color:var(--green)">$390.25</td><td class="mono" style="color:var(--amber)">$19.75</td><td>$0.00</td><td><span class="pill pill-green">Auto-Posted</span></td></tr>
+                <tr><td class="mono">CLM-P-001891</td><td>GARCIA, R.</td><td>BCBS</td><td>$320.00</td><td class="mono" style="color:var(--green)">$288.00</td><td class="mono" style="color:var(--amber)">$32.00</td><td>$0.00</td><td><span class="pill pill-green">Auto-Posted</span></td></tr>
+                <tr><td class="mono">CLM-P-001882</td><td>TORRES, M.</td><td>Medicaid CA</td><td>$180.00</td><td class="mono" style="color:var(--green)">$162.00</td><td class="mono" style="color:var(--amber)">$18.00</td><td>$0.00</td><td><span class="pill pill-green">Auto-Posted</span></td></tr>
+                <tr><td class="mono">CLM-P-001880</td><td>JONES, B.</td><td>UHC</td><td>$150.00</td><td class="mono">$0.00</td><td>$0.00</td><td class="mono" style="color:var(--amber)">$150.00</td><td><span class="pill pill-amber">Patient Bill</span></td></tr>
+                <tr><td class="mono">CLM-P-001878</td><td>BROWN, C.</td><td>Aetna</td><td>$240.00</td><td class="mono">$0.00</td><td class="mono" style="color:var(--red)">$240.00 CO-97</td><td>$0.00</td><td><span class="pill pill-red">Denied</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ ATTACHMENTS 275 ══════════ -->
+    <div class="view" id="view-attachments">
+      <div class="section-hdr">
+        <div class="section-hdr-icon amber">◫</div>
+        <div>
+          <div class="section-hdr-title">Claim Attachments</div>
+          <div class="section-hdr-sub">Electronic clinical documentation — payer-specific requirements auto-loaded</div>
+        </div>
+        <div class="section-hdr-edi"><span class="card-edi">275</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">275 Attachment Submission</div><button class="btn btn-primary btn-sm">▶ Send Attachment</button></div>
+        <div class="form-row"><div class="form-group"><label>Attachment Control No.</label><input value="ATT-2025-0099121"></div><div class="form-group"><label>Claim Reference</label><input value="CLM-P-001892"></div></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payer</label>
+            <select><option>UHC (87726)</option><option>BCBS (00001)</option><option>Medicare (00995)</option><option>Aetna (60054)</option><option>Medicaid (MMIS)</option></select>
+          </div>
+          <div class="form-group">
+            <label>Attachment Type</label>
+            <select><option>03 — Report Justifying Treatment</option><option>72 — Lab Results</option><option>A3 — Medical Record</option><option>11 — Operative Note</option><option>15 — Pathology Report</option></select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Document Upload</label>
+          <div style="background:var(--bg3);border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;color:var(--text3);font-size:12px;cursor:pointer">
+            Drop file or click — PDF, TIFF, HL7 CDA, CCDA<br><span style="font-size:10px;font-family:var(--mono)">Max 5MB · BIN segment encoding</span>
+          </div>
+        </div>
+        <div class="alert alert-info">ℹ PWK segment auto-embedded in the linked 837 claim. Payer-specific transmission method selected based on routing rules.</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══════════ PAYER DETAIL MODAL ══════════ -->
+<div class="modal-overlay" id="payer-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-payer-name">Payer Details</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:none;max-width:320px;z-index:9999;box-shadow:var(--shadow2)">
+  <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:4px" id="toast-title"></div>
+  <div style="font-size:11px;color:var(--text2)" id="toast-body"></div>
+</div>
+
+<script>
+// Auth guard
+if (!localStorage.getItem("accessToken") && !localStorage.getItem("demoMode")) {
+  window.location.href = "index.html";
+}
+// ── CLOCK ──
+function tick() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US',{hour12:false}); }
+tick(); setInterval(tick,1000);
+
+// ── ENV TOGGLE ──
+function setEnv(env) {
+  document.getElementById('env-prod').className = 'env-btn' + (env==='prod'?' active prod':'');
+  document.getElementById('env-test').className = 'env-btn' + (env==='test'?' active test':'');
+  toast(env==='prod'?'Production Mode Active':'Test Mode Active', env==='prod'?'All transactions routed to production endpoints':'Transactions routed to sandbox — no live submissions');
+}
+
+// ── NAVIGATION ──
+const titles = {
+  dashboard:['Dashboard','OVERVIEW'],
+  payers:['Payer Directory','87 PAYERS'],
+  connections:['Connections & Routing','EDI / API'],
+  medicare:['Medicare Direct','CMS / DDE / HETS'],
+  medicaid:['Medicaid Portals','50 STATES / MMIS'],
+  eligibility:['Eligibility & Benefits','270 / 271'],
+  claims837p:['Professional Claims','837P'],
+  claims837d:['Dental Claims','837D'],
+  claims837i:['Institutional Claims','837I'],
+  attachments:['Claim Attachments','275'],
+  ack277ca:['Acknowledgements','277CA'],
+  status276:['Claim Status','276 / 277'],
+  remittance835:['Remittance Advice','835'],
+};
+function navigate(id, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const v = document.getElementById('view-'+id);
+  if(v) v.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const t = titles[id]||[id,''];
+  document.getElementById('page-title').textContent = t[0];
+  document.getElementById('page-badge').textContent = t[1];
+}
+
+// ── TABS ──
+const panes = {
+  elig:['realtime','batch','discovery','mbi','cob'],
+  p:['entry','edits','queue','preview'],
+  p837d:['entry','edits','queue'],
+  p837i:['entry','edits','queue'],
+  r:['era','enrollment','posting'],
+  conn:['clearinghouses','direct','routing','creds'],
+  mc:['hets','dde','mac','mbi','partd'],
+};
+function switchTab(group, tab) {
+  const tabBar = document.getElementById(group+'-tabs');
+  if(tabBar) tabBar.querySelectorAll('.tab').forEach(t=>{
+    t.classList.toggle('active', (t.getAttribute('onclick')||'').includes("'"+tab+"'"));
+  });
+  const prefix = group+'-';
+  if(panes[group]) panes[group].forEach(p=>{
+    const el = document.getElementById(prefix+p);
+    if(el) el.style.display = (p===tab)?'block':'none';
+  });
+}
+
+// ── PAYER SELECTOR ──
+const payerRoutes = {
+  '00001':'Route: Availity Clearinghouse → BCBS',
+  '87726':'Route: UHC Optum Direct API — Real-Time',
+  '60054':'Route: Aetna FHIR API → CVS Health',
+  '62308':'Route: Optum Clearinghouse → Cigna',
+  '61101':'Route: Availity → Humana',
+  '00995':'Route: HETS Direct → CMS Medicare (Real-Time)',
+  'MMIS': 'Route: MMIS Direct → State Medicaid Portal',
+  '00120':'Route: Availity → Anthem/Elevance',
+  '68069':'Route: Availity → Centene/WellCare',
+  'MOLINA':'Route: Availity → Molina (State-based)',
+  'KPSA0':'Route: Availity → Kaiser Permanente',
+  '84980':'Route: Availity → BCBS Texas',
+  '00590':'Route: Availity → BCBS Massachusetts',
+  'OSCAR':'Route: Oscar FHIR API — Real-Time',
+  'TRICR':'Route: Availity → Tricare/Military',
+};
+function updatePayerID() {
+  const sel = document.getElementById('elig-payer');
+  const id = sel.value;
+  document.getElementById('elig-payer-id').value = id;
+  const ri = document.getElementById('elig-route-info');
+  ri.textContent = 'ℹ '+(payerRoutes[id]||'Route: Availity Clearinghouse');
+  ri.className = id==='00995'?'alert alert-info':'alert alert-info';
+}
+function loadPayerEdits() {
+  const sel = document.getElementById('claim-payer');
+  const id = sel.value;
+  document.getElementById('claim-payer-id').value = id;
+  const notices = {
+    '87726':'UHC rules loaded: prior auth check, modifier validation, taxonomy cross-check, NCCI edits',
+    '00001':'BCBS rules loaded: coordination of benefits check, PCP referral validation',
+    '60054':'Aetna rules loaded: medical necessity review, facility validation',
+    '62308':'Cigna rules loaded: place of service check, diagnosis specificity review',
+    '61101':'Humana rules loaded: Prior Auth API active, MARx coordination',
+    '00995':'Medicare rules loaded: NCCI/MUE 2025, LCD policies, HCPCS validation, ABN check',
+    'MMIS': 'Medicaid rules loaded: state-specific prior auth, managed care org routing, TPL/COB validation',
+    '00120':'Anthem rules loaded: UM criteria, in-network validation, specialty codes',
+    '68069':'Centene/WellCare rules loaded: managed Medicaid requirements, state EPSDT',
+    'TRICR':'Tricare rules loaded: military eligibility, network status, regional contract',
+  };
+  document.getElementById('payer-rules-notice').textContent = 'ℹ '+(notices[id]||'Payer rules loaded');
+}
+
+// ── PAYER FILTER ──
+function filterPayerType(type, btn) {
+  document.querySelectorAll('#payer-filter .radio-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#payer-grid .payer-card').forEach(c=>{
+    c.style.display = (type==='all'||c.dataset.type===type)?'block':'none';
+  });
+}
+function filterPayers() {
+  const q = document.getElementById('payer-search').value.toLowerCase();
+  document.querySelectorAll('#payer-grid .payer-card').forEach(c=>{
+    c.style.display = c.textContent.toLowerCase().includes(q)?'block':'none';
+  });
+}
+
+// ── MEDICAID FILTER ──
+function filterMedicaid(type, btn) {
+  document.querySelectorAll('#view-medicaid .radio-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#state-grid .state-item').forEach(s=>{
+    s.style.display = (type==='all'||s.dataset.status===type)?'block':'none';
+  });
+}
+
+// ── PAYER MODAL ──
+const payerDetails = {
+  uhc:{name:'UnitedHealthcare / Optum',id:'87726',body:`<div class="alert alert-success">● Connected — PROD · OAuth2 token valid</div><div class="form-row"><div class="form-group"><label>Payer ID</label><input value="87726" readonly></div><div class="form-group"><label>ISA Receiver ID</label><input value="UHC0" readonly style="font-family:var(--mono)"></div></div><div class="form-row"><div class="form-group"><label>Clearinghouse Route</label><input value="Optum Direct API (primary)" readonly></div><div class="form-group"><label>Fallback</label><input value="Availity" readonly></div></div><div style="font-size:12px;color:var(--text2);margin:12px 0">Supported Transactions:</div><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill pill-green">270/271</span><span class="pill pill-green">837P</span><span class="pill pill-green">837I</span><span class="pill pill-green">835 ERA</span><span class="pill pill-green">277CA</span><span class="pill pill-green">FHIR R4</span><span class="pill pill-blue">Prior Auth 278</span><span class="pill pill-blue">Real-Time PA</span></div><div class="form-group" style="margin-top:14px"><label>Today's Transactions</label><input value="641 txns — 98.4% acceptance rate" readonly></div>`},
+  bcbs:{name:'Blue Cross Blue Shield (National)',id:'00001',body:`<div class="alert alert-success">● Connected — PROD</div><div class="form-row"><div class="form-group"><label>Payer ID</label><input value="00001" readonly></div><div class="form-group"><label>Route</label><input value="Availity Clearinghouse" readonly></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><span class="pill pill-green">270/271</span><span class="pill pill-green">837P</span><span class="pill pill-green">837D</span><span class="pill pill-green">837I</span><span class="pill pill-green">835</span><span class="pill pill-green">Batch</span></div><div class="alert alert-warn">⚠ Inter-Plan claims require BlueCard routing via Home Plan ID</div>`},
+  aetna:{name:'Aetna / CVS Health',id:'60054',body:`<div class="alert alert-success">● Connected — Aetna FHIR API Active</div><div class="form-row"><div class="form-group"><label>Payer ID</label><input value="60054" readonly></div><div class="form-group"><label>API Route</label><input value="Aetna FHIR R4 API" readonly></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><span class="pill pill-green">270/271</span><span class="pill pill-green">837P</span><span class="pill pill-green">837I</span><span class="pill pill-green">835</span><span class="pill pill-blue">FHIR R4</span><span class="pill pill-blue">CMS Interop API</span></div>`},
+  cigna:{name:'Cigna / Evernorth',id:'62308',body:`<div class="alert alert-success">● Connected</div><div class="form-row"><div class="form-group"><label>Payer ID</label><input value="62308" readonly></div><div class="form-group"><label>Route</label><input value="Optum Clearinghouse" readonly></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><span class="pill pill-green">270/271</span><span class="pill pill-green">837P</span><span class="pill pill-green">837I</span><span class="pill pill-green">835</span><span class="pill pill-blue">FHIR</span></div>`},
+};
+function openPayerModal(id) {
+  const d = payerDetails[id];
+  if(!d) return;
+  document.getElementById('modal-payer-name').textContent = d.name;
+  document.getElementById('modal-body').innerHTML = d.body;
+  document.getElementById('payer-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('payer-modal').classList.remove('open'); }
+function openStateModal(state) { toast('Medicaid — '+state, 'Opening '+state+' MMIS portal connection settings...'); }
+
+// ── ELIGIBILITY ──
+function submitElig() {
+  toast('270 Submitted','Eligibility inquiry routed · Awaiting 271...');
+  setTimeout(()=>{ document.getElementById('card271').style.display='block'; toast('271 Received','✓ Eligible — BCBS PPO Gold · 0.38s'); },1400);
+}
+function runBatch() { toast('Batch 270 Started','Multiple payer queues initiated — auto-routing active'); }
+function runDiscovery() {
+  toast('Insurance Discovery','Scanning 900+ payers...');
+  setTimeout(()=>{ document.getElementById('discovery-placeholder').style.display='none'; document.getElementById('discovery-results').style.display='block'; toast('Discovery Complete','3 active coverages found — BCBS + Medicare + Part D'); },1600);
+}
+function runMBI() {
+  toast('MBI Lookup','Querying CMS HETS direct...');
+  setTimeout(()=>{ document.getElementById('mbi-placeholder').style.display='none'; document.getElementById('mbi-result').style.display='block'; toast('MBI Found','1EG4-TE5-MK72 · Part A&B active · HETS 1.14s'); },1200);
+}
+
+// ── MEDICARE ──
+function runMedicareElig() {
+  toast('HETS Query','Sending Medicare 270 direct to CMS...');
+  setTimeout(()=>{ document.getElementById('mc-hets-placeholder').style.display='none'; document.getElementById('mc-hets-result').style.display='block'; toast('HETS 271 Received','Medicare active · MSP: BCBS primary · 1.18s'); },1300);
+}
+function submitDDE() {
+  toast('DDE Submission','Claim transmitted to FISS via DDE terminal...');
+  setTimeout(()=>{ document.getElementById('dde-ok').style.display='block'; toast('FISS Accepted','ICN: 2025071499001 assigned'); },1500);
+}
+function runMBI2() {
+  toast('MBI Lookup','HETS direct query...');
+  setTimeout(()=>{ document.getElementById('mbi-placeholder2').style.display='none'; document.getElementById('mbi-result2').style.display='block'; toast('MBI Found','1EG4-TE5-MK72'); },1100);
+}
+
+// ── CLAIMS ──
+function validateClaim() { switchTab('p','edits'); toast('Edit Engine','Running payer-specific rules...'); setTimeout(()=>toast('Edits Complete','6 pass · 1 warning · 0 hard stops'),900); }
+function submitClaim837p() { toast('837P Submitted','Claim routed via Optum Direct API → UHC'); switchTab('p','queue'); }
+function addSvcLine() {
+  const tb = document.querySelector('#svc-table tbody');
+  const n = tb.rows.length+1;
+  const r = tb.insertRow();
+  r.innerHTML = `<td>${n}</td><td><input style="width:90px;padding:4px" value="20250312"></td><td><input style="width:70px;padding:4px" placeholder="CPT"></td><td><input style="width:50px;padding:4px"></td><td><input style="width:50px;padding:4px" value="1"></td><td><input style="width:45px;padding:4px" value="1"></td><td><input style="width:70px;padding:4px" placeholder="0.00"></td><td><button class="btn btn-danger btn-xs" onclick="this.closest('tr').remove()">✕</button></td>`;
+}
+
+// ── STATUS ──
+function submitStatus() {
+  toast('276 Inquiry','Sending real-time claim status request...');
+  setTimeout(()=>{ document.getElementById('status277-placeholder').style.display='none'; document.getElementById('status277-result').style.display='block'; toast('277 Received','F3 Finalized · ICN: 2025071400989'); },1100);
+}
+
+// ── 277CA ──
+function show277Detail() { document.getElementById('detail277').style.display='block'; document.getElementById('detail277').scrollIntoView({behavior:'smooth'}); }
+
+// ── MISC ──
+function showNotif() { toast('New Transaction','Select a module and payer from the sidebar to begin'); }
+
+// ── TOAST ──
+function toast(title, body) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-body').textContent = body;
+  t.style.display = 'block'; t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.style.display='none',300); },3400);
+}
+
+// ── 837D / 837I helpers ──
+function addSvcLine837d() {
+  const tb = document.querySelector('#svc-table-837d tbody');
+  const n = tb.rows.length + 1;
+  const r = tb.insertRow();
+  r.innerHTML = `<td>${n}</td><td><input style="width:90px;padding:4px" value="2025-03-12"></td><td><input style="width:70px;padding:4px" placeholder="D-code"></td><td><input style="width:40px;padding:4px"></td><td><input style="width:50px;padding:4px"></td><td><input style="width:35px;padding:4px" value="1"></td><td><input style="width:70px;padding:4px" placeholder="0.00"></td><td><button class="btn btn-danger btn-xs" onclick="this.closest('tr').remove()">✕</button></td>`;
+}
+function addRevLine() {
+  const tb = document.querySelector('#rev-table tbody');
+  const n = tb.rows.length + 1;
+  const r = tb.insertRow();
+  r.innerHTML = `<td>${n}</td><td><input style="width:60px;padding:4px" placeholder="XXXX"></td><td><input style="width:140px;padding:4px" placeholder="Description"></td><td><input style="width:60px;padding:4px"></td><td><input style="width:40px;padding:4px" value="1"></td><td><input style="width:80px;padding:4px" placeholder="0.00"></td><td><button class="btn btn-danger btn-xs" onclick="this.closest('tr').remove()">✕</button></td>`;
+}
+
+// ── RADIO TOGGLE ──
+document.querySelectorAll('.radio-group').forEach(g=>{
+  g.querySelectorAll('.radio-btn').forEach(b=>{
+    b.addEventListener('click',()=>{ g.querySelectorAll('.radio-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); });
+  });
+});
+</script>
+</body>
+</html>

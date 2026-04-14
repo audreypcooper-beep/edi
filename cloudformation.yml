@@ -1,0 +1,724 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  ClearPath EDI Portal — full infrastructure stack.
+  Provisions Cognito, DynamoDB, S3, CloudFront, SQS, SES and IAM for the
+  ClearPath healthcare EDI processing platform.
+
+# ---------------------------------------------------------------------------
+# Parameters
+# ---------------------------------------------------------------------------
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [production, staging, development]
+    Description: Deployment environment name
+
+  FrontendDomain:
+    Type: String
+    Default: "https://app.clearpath-edi.com"
+    Description: >
+      Full origin URL of the frontend application used in S3 CORS rules.
+
+  SESFromDomain:
+    Type: String
+    Default: "clearpath-edi.com"
+    Description: Domain to verify with SES for outbound email.
+
+  SESFromEmail:
+    Type: String
+    Default: "no-reply@clearpath-edi.com"
+    Description: Default sender address for transactional email.
+
+# ---------------------------------------------------------------------------
+# Conditions
+# ---------------------------------------------------------------------------
+Conditions:
+  IsProduction: !Equals [!Ref Environment, production]
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+Resources:
+
+  # =========================================================================
+  # Cognito
+  # =========================================================================
+
+  ClearPathUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ClearPathUserPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      EmailVerificationMessage: >
+        Your ClearPath EDI Portal verification code is {####}.
+      EmailVerificationSubject: "ClearPath EDI Portal — Verify your email"
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+        EmailMessage: >
+          Your ClearPath EDI Portal verification code is {####}.
+        EmailSubject: "ClearPath EDI Portal — Verify your email"
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 7
+      MfaConfiguration: OPTIONAL
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: given_name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: family_name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: orgName
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "1"
+            MaxLength: "256"
+        - Name: npi
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "10"
+            MaxLength: "10"
+        - Name: taxId
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "9"
+            MaxLength: "10"
+        - Name: accountType
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+          StringAttributeConstraints:
+            MinLength: "1"
+            MaxLength: "64"
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+        InviteMessageTemplate:
+          EmailMessage: >
+            You have been invited to ClearPath EDI Portal. Your temporary
+            password is {####}. Please sign in at {username}.
+          EmailSubject: "ClearPath EDI Portal — Your temporary password"
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      UserPoolTags:
+        Project: ClearPath
+        Environment: !Ref Environment
+
+  ClearPathUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: clearpath-web-client
+      UserPoolId: !Ref ClearPathUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+      AccessTokenValidity: 60          # minutes
+      IdTokenValidity: 60              # minutes
+      RefreshTokenValidity: 30         # days
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      PreventUserExistenceErrors: ENABLED
+      SupportedIdentityProviders:
+        - COGNITO
+
+  ClearPathUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub "clearpath-edi-${AWS::AccountId}"
+      UserPoolId: !Ref ClearPathUserPool
+
+  # =========================================================================
+  # DynamoDB Tables
+  # =========================================================================
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: clearpath-users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  EdiTransactionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: clearpath-edi-transactions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: transactionId
+          AttributeType: S
+        - AttributeName: referenceId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: transactionId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: referenceId-index
+          KeySchema:
+            - AttributeName: referenceId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  PaymentsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: clearpath-payments
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: paymentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: paymentId
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  BankAccountsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: clearpath-bank-accounts
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: accountId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: accountId
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  ReportsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: clearpath-reports
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: reportId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+        - AttributeName: reportId
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  # =========================================================================
+  # S3 — EDI Reports bucket (private)
+  # =========================================================================
+
+  EdiReportsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "clearpath-edi-reports-${AWS::AccountId}"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteAfter90Days
+            Status: Enabled
+            ExpirationInDays: 90
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "Authorization"
+              - "Content-Type"
+              - "x-amz-date"
+              - "x-amz-security-token"
+            AllowedMethods:
+              - GET
+              - PUT
+              - HEAD
+            AllowedOrigins:
+              - !Ref FrontendDomain
+            ExposedHeaders:
+              - ETag
+            MaxAge: 3000
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  # =========================================================================
+  # S3 — Frontend static website bucket (public)
+  # =========================================================================
+
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "clearpath-frontend-${AWS::AccountId}"
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::clearpath-frontend-${AWS::AccountId}/*"
+
+  # =========================================================================
+  # CloudFront Distribution
+  # =========================================================================
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: ClearPath EDI Portal frontend
+        Enabled: true
+        DefaultRootObject: index.html
+        HttpVersion: http2
+        IPV6Enabled: true
+        Origins:
+          - Id: FrontendS3Origin
+            DomainName: !Sub "clearpath-frontend-${AWS::AccountId}.s3-website-${AWS::Region}.amazonaws.com"
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+              HTTPPort: 80
+        DefaultCacheBehavior:
+          TargetOriginId: FrontendS3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6   # CachingOptimized (managed)
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+        PriceClass: PriceClass_100
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  # =========================================================================
+  # SQS — EDI processing queue + DLQ
+  # =========================================================================
+
+  EdiProcessingDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: clearpath-edi-processing-dlq
+      MessageRetentionPeriod: 1209600   # 14 days
+      KmsMasterKeyId: alias/aws/sqs
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  EdiProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: clearpath-edi-processing
+      MessageRetentionPeriod: 1209600   # 14 days
+      VisibilityTimeout: 300            # 5 minutes — allow for EDI round-trip
+      ReceiveMessageWaitTimeSeconds: 20 # long polling
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt EdiProcessingDLQ.Arn
+        maxReceiveCount: 3
+      KmsMasterKeyId: alias/aws/sqs
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  # =========================================================================
+  # SES — domain identity (placeholder; verification is done out-of-band)
+  # =========================================================================
+
+  SESEmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: !Ref SESFromDomain
+
+  # =========================================================================
+  # IAM — Backend service role
+  # =========================================================================
+
+  ClearPathBackendRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ClearPathBackendRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Description: >
+        Service role assumed by ClearPath backend compute (EC2 or ECS tasks).
+      Tags:
+        - Key: Project
+          Value: ClearPath
+        - Key: Environment
+          Value: !Ref Environment
+
+  ClearPathBackendPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: ClearPathBackendPolicy
+      Roles:
+        - !Ref ClearPathBackendRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+
+          # --- DynamoDB: full access to ClearPath tables only ---------------
+          - Sid: DynamoDBClearPathTables
+            Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:DescribeTable
+              - dynamodb:TransactGetItems
+              - dynamodb:TransactWriteItems
+            Resource:
+              - !GetAtt UsersTable.Arn
+              - !Sub "${UsersTable.Arn}/index/*"
+              - !GetAtt EdiTransactionsTable.Arn
+              - !Sub "${EdiTransactionsTable.Arn}/index/*"
+              - !GetAtt PaymentsTable.Arn
+              - !Sub "${PaymentsTable.Arn}/index/*"
+              - !GetAtt BankAccountsTable.Arn
+              - !Sub "${BankAccountsTable.Arn}/index/*"
+              - !GetAtt ReportsTable.Arn
+              - !Sub "${ReportsTable.Arn}/index/*"
+
+          # --- S3: EDI reports bucket read/write ----------------------------
+          - Sid: S3EdiReports
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+              - s3:GetObjectVersion
+              - s3:GetBucketLocation
+            Resource:
+              - !GetAtt EdiReportsBucket.Arn
+              - !Sub "${EdiReportsBucket.Arn}/*"
+
+          # --- S3: frontend bucket deploy (CI/CD role re-uses this) ---------
+          - Sid: S3Frontend
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+            Resource:
+              - !Sub "arn:aws:s3:::clearpath-frontend-${AWS::AccountId}"
+              - !Sub "arn:aws:s3:::clearpath-frontend-${AWS::AccountId}/*"
+
+          # --- SES: send email ----------------------------------------------
+          - Sid: SESSendEmail
+            Effect: Allow
+            Action:
+              - ses:SendEmail
+              - ses:SendRawEmail
+              - ses:SendTemplatedEmail
+            Resource:
+              - !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESFromDomain}"
+              - !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESFromEmail}"
+
+          # --- SQS: send/receive/delete on ClearPath queues -----------------
+          - Sid: SQSClearPathQueues
+            Effect: Allow
+            Action:
+              - sqs:SendMessage
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:GetQueueUrl
+              - sqs:ChangeMessageVisibility
+            Resource:
+              - !GetAtt EdiProcessingQueue.Arn
+              - !GetAtt EdiProcessingDLQ.Arn
+
+          # --- Cognito: admin user management -------------------------------
+          - Sid: CognitoAdminUserManagement
+            Effect: Allow
+            Action:
+              - cognito-idp:AdminCreateUser
+              - cognito-idp:AdminSetUserPassword
+              - cognito-idp:AdminGetUser
+              - cognito-idp:AdminUpdateUserAttributes
+              - cognito-idp:AdminDeleteUser
+              - cognito-idp:AdminDisableUser
+              - cognito-idp:AdminEnableUser
+              - cognito-idp:AdminListGroupsForUser
+              - cognito-idp:AdminAddUserToGroup
+              - cognito-idp:AdminRemoveUserFromGroup
+              - cognito-idp:AdminResetUserPassword
+              - cognito-idp:ListUsers
+              - cognito-idp:ListUsersInGroup
+              - cognito-idp:DescribeUserPool
+            Resource:
+              - !GetAtt ClearPathUserPool.Arn
+
+          # --- KMS: decrypt SQS messages (managed key) ---------------------
+          - Sid: KMSDecryptSQS
+            Effect: Allow
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Resource: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/sqs"
+
+  ClearPathInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: ClearPathBackendInstanceProfile
+      Roles:
+        - !Ref ClearPathBackendRole
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+Outputs:
+
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref ClearPathUserPool
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolId"
+
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref ClearPathUserPoolClient
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientId"
+
+  UserPoolDomain:
+    Description: Cognito hosted UI domain
+    Value: !Sub "https://clearpath-edi-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com"
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolDomain"
+
+  UsersTableName:
+    Description: DynamoDB users table name
+    Value: !Ref UsersTable
+    Export:
+      Name: !Sub "${AWS::StackName}-UsersTable"
+
+  EdiTransactionsTableName:
+    Description: DynamoDB EDI transactions table name
+    Value: !Ref EdiTransactionsTable
+    Export:
+      Name: !Sub "${AWS::StackName}-EdiTransactionsTable"
+
+  PaymentsTableName:
+    Description: DynamoDB payments table name
+    Value: !Ref PaymentsTable
+    Export:
+      Name: !Sub "${AWS::StackName}-PaymentsTable"
+
+  BankAccountsTableName:
+    Description: DynamoDB bank accounts table name
+    Value: !Ref BankAccountsTable
+    Export:
+      Name: !Sub "${AWS::StackName}-BankAccountsTable"
+
+  ReportsTableName:
+    Description: DynamoDB reports table name
+    Value: !Ref ReportsTable
+    Export:
+      Name: !Sub "${AWS::StackName}-ReportsTable"
+
+  EdiReportsBucketName:
+    Description: S3 bucket for EDI reports (private)
+    Value: !Ref EdiReportsBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-EdiReportsBucket"
+
+  FrontendBucketName:
+    Description: S3 bucket for frontend static assets
+    Value: !Ref FrontendBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-FrontendBucket"
+
+  EdiProcessingQueueUrl:
+    Description: SQS queue URL for EDI processing
+    Value: !Ref EdiProcessingQueue
+    Export:
+      Name: !Sub "${AWS::StackName}-EdiProcessingQueueUrl"
+
+  EdiProcessingQueueArn:
+    Description: SQS queue ARN for EDI processing
+    Value: !GetAtt EdiProcessingQueue.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-EdiProcessingQueueArn"
+
+  EdiProcessingDLQUrl:
+    Description: SQS dead-letter queue URL for EDI processing
+    Value: !Ref EdiProcessingDLQ
+    Export:
+      Name: !Sub "${AWS::StackName}-EdiProcessingDLQUrl"
+
+  CloudFrontDomainName:
+    Description: CloudFront distribution domain name
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-CloudFrontDomain"
+
+  CloudFrontDistributionId:
+    Description: CloudFront distribution ID (needed for cache invalidations)
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub "${AWS::StackName}-CloudFrontDistributionId"
+
+  BackendRoleArn:
+    Description: IAM role ARN for the backend service
+    Value: !GetAtt ClearPathBackendRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-BackendRoleArn"
